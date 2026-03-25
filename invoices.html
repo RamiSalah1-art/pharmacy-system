@@ -11,19 +11,16 @@
         body {
             font-family: 'Cairo', sans-serif;
             background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
         }
-        .app-container { display: flex; min-height: 100vh; }
-        
-        /* القائمة الجانبية */
+        .app-container { display: flex; height: 100vh; }
         .sidebar {
             width: 260px;
             background: white;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            height: 100vh;
-            position: fixed;
+            height: 100%;
             overflow-y: auto;
-            transition: 0.3s;
-            z-index: 1000;
         }
         .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #e0e0e0; }
         .sidebar-header i { font-size: 40px; color: #2c7da0; }
@@ -44,7 +41,7 @@
             border-top: 1px solid #e0e0e0;
             position: absolute;
             bottom: 0;
-            width: 100%;
+            width: 260px;
         }
         .logout-btn {
             width: 100%;
@@ -55,19 +52,17 @@
             border-radius: 8px;
             cursor: pointer;
         }
-        
-        /* المحتوى الرئيسي */
         .main-content {
             flex: 1;
-            margin-right: 260px;
-            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         .top-bar {
             background: white;
             padding: 15px 25px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .menu-toggle {
@@ -77,44 +72,11 @@
             cursor: pointer;
             display: none;
         }
-        .content-wrapper { padding: 20px; }
-        
-        /* طبقة التعتيم */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-            cursor: pointer;
+        .content-wrapper {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
         }
-        
-        /* استعلامات الهاتف */
-        @media (max-width: 768px) {
-            .sidebar {
-                right: -260px;
-                left: auto;
-                transition: right 0.3s ease;
-            }
-            .sidebar.open {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-            }
-            .overlay.show {
-                display: block;
-            }
-        }
-        
-        /* الفلاتر والبطاقات */
         .filters-bar {
             background: white;
             padding: 15px;
@@ -198,6 +160,16 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        .btn-delete-invoice {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-delete-invoice:hover { background: #c0392b; }
         .empty-state {
             text-align: center;
             padding: 60px;
@@ -205,18 +177,18 @@
             border-radius: 12px;
         }
         @media (max-width: 768px) {
+            .sidebar { position: fixed; transform: translateX(-100%); transition: 0.3s; }
+            .sidebar.active { transform: translateX(0); }
+            .menu-toggle { display: block; }
+            .main-content { margin-right: 0; }
             .detail-row { grid-template-columns: repeat(2, 1fr); }
             .filters-bar { flex-direction: column; }
             .filters-bar input, .filters-bar select, .btn-clear { width: 100%; }
         }
-    .btn-delete:hover { background: #c0392b; } </style>
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- طبقة التعتيم -->
-        <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
-        
-        <!-- القائمة الجانبية -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
             <nav class="sidebar-nav">
@@ -230,7 +202,6 @@
             </nav>
             <div class="sidebar-footer"><button onclick="logout()" class="logout-btn">تسجيل الخروج</button></div>
         </aside>
-        
         <main class="main-content">
             <header class="top-bar">
                 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
@@ -243,7 +214,7 @@
                 </div>
                 
                 <div class="filters-bar">
-                    <input type="text" id="searchInput" placeholder="بحث برقم الفاتورة أو اسم العميل"">
+                    <input type="text" id="searchInput" placeholder="بحث برقم الفاتورة أو اسم العميل">
                     <select id="paymentFilter">
                         <option value="all">جميع طرق الدفع</option>
                         <option value="نقدي">نقدي</option>
@@ -280,7 +251,7 @@
                 const date = new Date(inv.date);
                 const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
                 html += `
-                    <div class="invoice-card">
+                    <div class="invoice-card" data-id="${inv.id}">
                         <div class="invoice-header" onclick="toggleInvoice(${i})">
                             <div><strong>${inv.number || '-'}</strong><br><small>${formattedDate}</small></div>
                             <div><strong>${(inv.total || 0).toFixed(2)} ج.س</strong> <i class="fas fa-chevron-down"></i></div>
@@ -300,7 +271,10 @@
                             </div>
                             <div class="invoice-footer">
                                 <div><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div>
-                                <button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})"><i class="fas fa-print"></i> طباعة</button> <button class="btn-delete" onclick="event.stopPropagation(); deleteInvoice(${i})" style="background:#e74c3c;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;"><i class="fas fa-trash"></i> حذف</button>
+                                <div>
+                                    <button class="btn-delete-invoice" onclick="event.stopPropagation(); deleteInvoice(${i})"><i class="fas fa-trash"></i> حذف</button>
+                                    <button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})"><i class="fas fa-print"></i> طباعة</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -314,18 +288,21 @@
             if (content) content.classList.toggle('show');
         }
         
-        function printInvoice(index) { 
         function deleteInvoice(index) {
-            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الفاتورة؟')) return;
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
+            const invoice = allInvoices[index];
+            const invoiceNumber = invoice ? invoice.number : 'الفاتورة';
             allInvoices.splice(index, 1);
             localStorage.setItem('invoices', JSON.stringify(allInvoices));
             displayInvoices(allInvoices);
-            alert('✅ تم حذف الفاتورة بنجاح');
-        } function printInvoice(index) {
+            alert(`✅ تم حذف ${invoiceNumber} بنجاح`);
+        }
+        
+        function printInvoice(index) {
             const inv = allInvoices[index];
             if (!inv) return;
             const win = window.open('', '_blank');
-            win.document.write(`<html dir="rtl"><head><title>فاتورة ${inv.number}</title><meta charset="UTF-8"><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}.btn-delete:hover { background: #c0392b; } </style></head><body><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p><div><strong>رقم الفاتورة:</strong> ${inv.number}</div><div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div><table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>${inv.items ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}</tbody></table><div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</div></body></html>`);
+            win.document.write(`<html dir="rtl"><head><title>فاتورة ${inv.number}</title><meta charset="UTF-8"><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p><div><strong>رقم الفاتورة:</strong> ${inv.number}</div><div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div><div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div><table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>${inv.items ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}</tbody></table><div style="margin-top:20px;"><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div></body></html>`);
             win.document.close();
             win.print();
         }
@@ -350,25 +327,8 @@
             displayInvoices(allInvoices);
         }
         
-        // دوال القائمة الجانبية
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('show');
-        }
-        
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.remove('open');
-            overlay.classList.remove('show');
-        }
-        
-        function logout() {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
         
         document.getElementById('searchInput').addEventListener('input', applyFilters);
         document.getElementById('paymentFilter').addEventListener('change', applyFilters);
@@ -380,5 +340,3 @@
     </script>
 </body>
 </html>
-
-
