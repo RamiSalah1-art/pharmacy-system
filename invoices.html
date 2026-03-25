@@ -273,7 +273,7 @@
                                 <div><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div>
                                 <div>
                                     <button class="btn-delete-invoice" onclick="event.stopPropagation(); deleteInvoice(${i})"><i class="fas fa-trash"></i> حذف</button>
-                                    <button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})"><i class="fas fa-print"></i> طباعة</button>
+                                    <button class="btn-delete-invoice" onclick="event.stopPropagation(); deleteInvoice(${i})" style="background:#e74c3c;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;margin-left:10px;"><i class="fas fa-trash"></i> حذف</button><button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})" style="background:#27ae60;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;"><i class="fas fa-print"></i> طباعة</button>
                                 </div>
                             </div>
                         </div>
@@ -340,3 +340,4 @@
     </script>
 </body>
 </html>
+
