@@ -274,15 +274,18 @@
                             </div>
                             <div class="items-table">
                                 <h4>المنتجات</h4>
-                                <table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>
-                                ${inv.items && inv.items.length > 0 ? inv.items.map(item => `发展
-                                    <td>${item.name}发展
-                                    <td>${item.quantity}发展
-                                    <td>${item.price.toFixed(2)} ج.س发展
-                                    <td>${(item.price * item.quantity).toFixed(2)} ج.س发展
-                                 </table>`).join('') : '发展<td colspan="4">لا توجد تفاصيل发展发展'}
-                                </tbody>
-                              发展
+                                <table>
+                                    <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+                                    <tbody>
+                                        ${inv.items && inv.items.length > 0 ? inv.items.map(item => `
+                                        <tr>
+                                            <td>${item.name}</td>
+                                            <td>${item.quantity}</td>
+                                            <td>${item.price.toFixed(2)} ج.س</td>
+                                            <td>${(item.price * item.quantity).toFixed(2)} ج.س</td>
+                                        </tr>`).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
+                                    </tbody>
+                                </table>
                             </div>
                             <div class="invoice-footer">
                                 <div><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div>
@@ -351,7 +354,7 @@
                     <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
                     <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
                     <div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div>
-                     <table>
+                    <table>
                         <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
                         <tbody>
                             ${inv.items ? inv.items.map(item => `
@@ -404,4 +407,3 @@
     </script>
 </body>
 </html>
-
