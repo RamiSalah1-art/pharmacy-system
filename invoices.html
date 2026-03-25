@@ -209,7 +209,7 @@
             .filters-bar { flex-direction: column; }
             .filters-bar input, .filters-bar select, .btn-clear { width: 100%; }
         }
-    </style>
+    .btn-delete:hover { background: #c0392b; } </style>
 </head>
 <body>
     <div class="app-container">
@@ -300,7 +300,7 @@
                             </div>
                             <div class="invoice-footer">
                                 <div><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div>
-                                <button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})"><i class="fas fa-print"></i> طباعة</button>
+                                <button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})"><i class="fas fa-print"></i> طباعة</button> <button class="btn-delete" onclick="event.stopPropagation(); deleteInvoice(${i})" style="background:#e74c3c;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;"><i class="fas fa-trash"></i> حذف</button>
                             </div>
                         </div>
                     </div>
@@ -314,11 +314,18 @@
             if (content) content.classList.toggle('show');
         }
         
-        function printInvoice(index) {
+        function printInvoice(index) { 
+        function deleteInvoice(index) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الفاتورة؟')) return;
+            allInvoices.splice(index, 1);
+            localStorage.setItem('invoices', JSON.stringify(allInvoices));
+            displayInvoices(allInvoices);
+            alert('✅ تم حذف الفاتورة بنجاح');
+        } function printInvoice(index) {
             const inv = allInvoices[index];
             if (!inv) return;
             const win = window.open('', '_blank');
-            win.document.write(`<html dir="rtl"><head><title>فاتورة ${inv.number}</title><meta charset="UTF-8"><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p><div><strong>رقم الفاتورة:</strong> ${inv.number}</div><div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div><table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>${inv.items ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}</tbody></table><div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</div></body></html>`);
+            win.document.write(`<html dir="rtl"><head><title>فاتورة ${inv.number}</title><meta charset="UTF-8"><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}.btn-delete:hover { background: #c0392b; } </style></head><body><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p><div><strong>رقم الفاتورة:</strong> ${inv.number}</div><div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div><table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>${inv.items ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}</tbody></table><div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</div></body></html>`);
             win.document.close();
             win.print();
         }
@@ -373,4 +380,5 @@
     </script>
 </body>
 </html>
+
 
