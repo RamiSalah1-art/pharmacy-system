@@ -558,7 +558,7 @@
             sidebar.classList.toggle('active');
             if (overlay) overlay.classList.toggle('active');
         }
-        function closeSidebar() {
+        function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); } {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
             sidebar.classList.remove('active');
@@ -583,6 +583,7 @@
     </script>
 </body>
 </html>
+
 
 
 

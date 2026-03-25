@@ -79,7 +79,42 @@
         }
         .content-wrapper { padding: 20px; }
         
-        /* الفلترة */
+        /* طبقة التعتيم */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            cursor: pointer;
+        }
+        
+        /* استعلامات الهاتف */
+        @media (max-width: 768px) {
+            .sidebar {
+                right: -260px;
+                left: auto;
+                transition: right 0.3s ease;
+            }
+            .sidebar.open {
+                right: 0;
+            }
+            .main-content {
+                margin-right: 0;
+                width: 100%;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .overlay.show {
+                display: block;
+            }
+        }
+        
+        /* الفلاتر والبطاقات */
         .filters-bar {
             background: white;
             padding: 15px;
@@ -122,8 +157,6 @@
             text-decoration: none;
             display: inline-block;
         }
-        
-        /* بطاقات الفواتير */
         .invoice-card {
             background: white;
             border-radius: 12px;
@@ -138,7 +171,6 @@
             cursor: pointer;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
         .invoice-content { display: none; padding: 20px; }
         .invoice-content.show { display: block; }
@@ -172,119 +204,20 @@
             background: white;
             border-radius: 12px;
         }
-        
-        /* استعلامات الهاتف */
         @media (max-width: 768px) {
-            .sidebar {
-                right: -280px;
-                left: auto;
-                transition: right 0.3s ease;
-            }
-            .sidebar.active {
-                right: 0;
-                left: auto;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-            }
-            .detail-row {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            .filters-bar {
-                flex-direction: column;
-            }
-            .filters-bar input, .filters-bar select, .btn-clear {
-                width: 100%;
-            }
+            .detail-row { grid-template-columns: repeat(2, 1fr); }
+            .filters-bar { flex-direction: column; }
+            .filters-bar input, .filters-bar select, .btn-clear { width: 100%; }
         }
-            @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }</style>
-<style>
-.sidebar {
-    position: fixed;
-    top: 0;
-    right: -280px;
-    width: 280px;
-    height: 100%;
-    transition: right 0.3s ease;
-    z-index: 1000;
-}
-.menu-toggle {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-</style><style>
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        top: 0;
-        right: -280px;
-        width: 280px;
-        height: 100%;
-        transition: right 0.3s ease;
-        z-index: 1000;
-        background: white;
-        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-    }
-    .sidebar.active {
-        right: 0;
-    }
-    .menu-toggle {
-        display: block;
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-    }
-}
-@media (min-width: 769px) {
-    .menu-toggle {
-        display: none;
-    }
-    .sidebar {
-        position: relative;
-        right: 0 !important;
-    }
-}
-</style></head>
-<body><div id="overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;" onclick="closeSidebar()"></div>
+    </style>
+</head>
+<body>
     <div class="app-container">
-        <aside class="sidebar" id="sidebar"><div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">✕</button></div>
+        <!-- طبقة التعتيم -->
+        <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+        
+        <!-- القائمة الجانبية -->
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html"><i class="fas fa-chart-line"></i> لوحة التحكم</a>
@@ -297,6 +230,7 @@
             </nav>
             <div class="sidebar-footer"><button onclick="logout()" class="logout-btn">تسجيل الخروج</button></div>
         </aside>
+        
         <main class="main-content">
             <header class="top-bar">
                 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
@@ -328,19 +262,15 @@
         
         function loadInvoices() {
             const stored = localStorage.getItem('invoices');
-            if (stored) {
-                allInvoices = JSON.parse(stored);
-            } else {
-                allInvoices = [];
-            }
+            if (stored) allInvoices = JSON.parse(stored);
+            else allInvoices = [];
             displayInvoices(allInvoices);
         }
         
         function displayInvoices(invoices) {
             const container = document.getElementById('invoicesList');
-            
             if (!invoices || invoices.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><h3>لا توجد فواتير</h3><p>قم بإجراء عملية بيع جديدة من نقطة البيع</p></div>';
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><h3>لا توجد فواتير</h3><p>قم بإجراء عملية بيع جديدة</p></div>';
                 return;
             }
             
@@ -349,7 +279,6 @@
                 const inv = invoices[i];
                 const date = new Date(inv.date);
                 const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
-                
                 html += `
                     <div class="invoice-card">
                         <div class="invoice-header" onclick="toggleInvoice(${i})">
@@ -365,14 +294,9 @@
                             </div>
                             <div class="items-table">
                                 <h4>المنتجات</h4>
-                                <table>
-                                    <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-                                    <tbody>
-                                        ${inv.items && inv.items.length > 0 ? inv.items.map(item => `
-                                            <tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>
-                                        `).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
-                                    </tbody>
-                                </table>
+                                <table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>
+                                ${inv.items && inv.items.length > 0 ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
+                                </tbody></table>
                             </div>
                             <div class="invoice-footer">
                                 <div><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div>
@@ -393,150 +317,21 @@
         function printInvoice(index) {
             const inv = allInvoices[index];
             if (!inv) return;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html dir="rtl"><head><title>فاتورة ${inv.number}</title><meta charset="UTF-8">
-                <style>
-                    body { font-family: 'Cairo', sans-serif; padding: 20px; }
-                    .header { text-align: center; border-bottom: 2px solid #2c7da0; padding-bottom: 15px; margin-bottom: 20px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
-                    .total { margin-top: 15px; text-align: left; font-weight: bold; }
-                    .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #7f8c8d; }
-                        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }</style>
-                <style>
-.sidebar {
-    position: fixed;
-    top: 0;
-    right: -280px;
-    width: 280px;
-    height: 100%;
-    transition: right 0.3s ease;
-    z-index: 1000;
-}
-.menu-toggle {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-</style><style>
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        top: 0;
-        right: -280px;
-        width: 280px;
-        height: 100%;
-        transition: right 0.3s ease;
-        z-index: 1000;
-        background: white;
-        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-    }
-    .sidebar.active {
-        right: 0;
-    }
-    .menu-toggle {
-        display: block;
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-    }
-}
-@media (min-width: 769px) {
-    .menu-toggle {
-        display: none;
-    }
-    .sidebar {
-        position: relative;
-        right: 0 !important;
-    }
-}
-</style></head><body><div id="overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;" onclick="closeSidebar()"></div>
-                <div class="header"><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p></div>
-                <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
-                <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
-                <div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div>
-                <table><thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>
-                ${inv.items && inv.items.length > 0 ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}
-                </tbody></table>
-                <div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</div>
-                <div class="footer">شكراً لتعاملكم معنا</div>
-                        <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('active');
-            if (overlay) {
-                if (sidebar.classList.contains('active')) {
-                    overlay.style.display = 'block';
-                } else {
-                    overlay.style.display = 'none';
-                }
-            }
-        }
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.remove('active');
-            if (overlay) overlay.style.display = 'none';
-        }
-        </script><script>
-function toggleSidebar() {
-    document.getElementById('sidebar').style.right = '0';
-}
-function closeSidebar() {
-    document.getElementById('sidebar').style.right = '-280px';
-}
-</script></body></html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
+            const win = window.open('', '_blank');
+            win.document.write(`<html dir="rtl"><head><title>فاتورة ${inv.number}</title><meta charset="UTF-8"><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p><div><strong>رقم الفاتورة:</strong> ${inv.number}</div><div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div><table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>${inv.items ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}</tbody></table><div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</div></body></html>`);
+            win.document.close();
+            win.print();
         }
         
         function applyFilters() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const paymentMethod = document.getElementById('paymentFilter').value;
-            
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const method = document.getElementById('paymentFilter').value;
             let filtered = allInvoices.filter(inv => {
                 let match = true;
-                if (searchText) {
-                    const numMatch = inv.number ? inv.number.toLowerCase().includes(searchText) : false;
-                    const custMatch = inv.customerName ? inv.customerName.toLowerCase().includes(searchText) : false;
-                    if (!numMatch && !custMatch) match = false;
+                if (search) {
+                    if (!inv.number?.toLowerCase().includes(search) && !inv.customerName?.toLowerCase().includes(search)) match = false;
                 }
-                if (paymentMethod !== 'all' && inv.paymentMethod !== paymentMethod) match = false;
+                if (method !== 'all' && inv.paymentMethod !== method) match = false;
                 return match;
             });
             displayInvoices(filtered);
@@ -548,8 +343,19 @@ function closeSidebar() {
             displayInvoices(allInvoices);
         }
         
+        // دوال القائمة الجانبية
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+        
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
         }
         
         function logout() {
@@ -565,36 +371,5 @@ function closeSidebar() {
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
         loadInvoices();
     </script>
-        <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('active');
-            if (overlay) {
-                if (sidebar.classList.contains('active')) {
-                    overlay.style.display = 'block';
-                } else {
-                    overlay.style.display = 'none';
-                }
-            }
-        }
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.remove('active');
-            if (overlay) overlay.style.display = 'none';
-        }
-        </script><script>
-function toggleSidebar() {
-    document.getElementById('sidebar').style.right = '0';
-}
-function closeSidebar() {
-    document.getElementById('sidebar').style.right = '-280px';
-}
-</script></body>
+</body>
 </html>
-
-
-
-
-

@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', updateDashboardCurrency);
                 }
             }
         }
-        function closeSidebar() {
+        function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); } {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
             sidebar.classList.remove('active');
@@ -540,6 +540,7 @@ document.addEventListener('DOMContentLoaded', updateDashboardCurrency);
         }
         </script></body>
 </html>
+
 
 
 
