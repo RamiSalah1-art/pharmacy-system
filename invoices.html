@@ -148,9 +148,28 @@
         .invoice-footer {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px solid #eee;
+        }
+        .btn-edit {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 8px;
         }
         .btn-print {
             background: #27ae60;
@@ -160,16 +179,6 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        .btn-delete-invoice {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .btn-delete-invoice:hover { background: #c0392b; }
         .empty-state {
             text-align: center;
             padding: 60px;
@@ -266,14 +275,21 @@
                             <div class="items-table">
                                 <h4>المنتجات</h4>
                                 <table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>
-                                ${inv.items && inv.items.length > 0 ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
-                                </tbody></table>
+                                ${inv.items && inv.items.length > 0 ? inv.items.map(item => `发展
+                                    <td>${item.name}发展
+                                    <td>${item.quantity}发展
+                                    <td>${item.price.toFixed(2)} ج.س发展
+                                    <td>${(item.price * item.quantity).toFixed(2)} ج.س发展
+                                 </table>`).join('') : '发展<td colspan="4">لا توجد تفاصيل发展发展'}
+                                </tbody>
+                              发展
                             </div>
                             <div class="invoice-footer">
                                 <div><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div>
                                 <div>
-                                    <button class="btn-delete-invoice" onclick="event.stopPropagation(); deleteInvoice(${i})"><i class="fas fa-trash"></i> حذف</button>
-                                    <button class="btn-edit-invoice" onclick="event.stopPropagation(); editInvoice(${i})" style="background:#f39c12;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;margin-left:5px;"><i class="fas fa-edit"></i> تعديل</button><button class="btn-delete-invoice" onclick="event.stopPropagation(); deleteInvoice(${i})" style="background:#e74c3c;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;margin-left:5px;"><i class="fas fa-trash"></i> حذف</button><button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})" style="background:#27ae60;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;"><i class="fas fa-print"></i> طباعة</button>
+                                    <button class="btn-edit" onclick="event.stopPropagation(); editInvoice(${i})"><i class="fas fa-edit"></i> تعديل</button>
+                                    <button class="btn-delete" onclick="event.stopPropagation(); deleteInvoice(${i})"><i class="fas fa-trash"></i> حذف</button>
+                                    <button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})"><i class="fas fa-print"></i> طباعة</button>
                                 </div>
                             </div>
                         </div>
@@ -288,10 +304,9 @@
             if (content) content.classList.toggle('show');
         }
         
-                function editInvoice(index) {
+        function editInvoice(index) {
             const inv = allInvoices[index];
             if (!inv) return;
-            // فتح نافذة تعديل
             const newCustomer = prompt('تعديل اسم العميل:', inv.customerName);
             if (newCustomer !== null) inv.customerName = newCustomer || 'نقدي';
             const newNotes = prompt('تعديل الملاحظات:', inv.notes || '');
@@ -299,7 +314,9 @@
             localStorage.setItem('invoices', JSON.stringify(allInvoices));
             displayInvoices(allInvoices);
             alert('✅ تم تعديل الفاتورة بنجاح');
-        } function deleteInvoice(index) {
+        }
+        
+        function deleteInvoice(index) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
             const invoice = allInvoices[index];
             const invoiceNumber = invoice ? invoice.number : 'الفاتورة';
@@ -313,7 +330,43 @@
             const inv = allInvoices[index];
             if (!inv) return;
             const win = window.open('', '_blank');
-            win.document.write(`<html dir="rtl"><head><title>فاتورة ${inv.number}</title><meta charset="UTF-8"><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p><div><strong>رقم الفاتورة:</strong> ${inv.number}</div><div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div><div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div><table><thead><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></thead><tbody>${inv.items ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}</tbody></table><div style="margin-top:20px;"><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div></body></html>`);
+            win.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>فاتورة ${inv.number}</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        body { font-family: 'Cairo', sans-serif; padding: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+                        .header { text-align: center; border-bottom: 2px solid #2c7da0; padding-bottom: 15px; margin-bottom: 20px; }
+                        .total { margin-top: 20px; text-align: left; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>نظام إدارة الصيدليات</h2>
+                        <p>${new Date(inv.date).toLocaleString('ar-SA')}</p>
+                    </div>
+                    <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
+                    <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
+                    <div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div>
+                     <table>
+                        <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+                        <tbody>
+                            ${inv.items ? inv.items.map(item => `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td>${item.quantity}</td>
+                                <td>${item.price.toFixed(2)} ج.س</td>
+                                <td>${(item.price * item.quantity).toFixed(2)} ج.س</td>
+                            </tr>`).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
+                        </tbody>
+                    </table>
+                    <div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</div>
+                </body>
+                </html>
+            `);
             win.document.close();
             win.print();
         }
@@ -351,8 +404,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
