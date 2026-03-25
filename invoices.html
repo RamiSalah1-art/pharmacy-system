@@ -248,6 +248,39 @@
     font-size: 24px;
     cursor: pointer;
 }
+</style><style>
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: -280px;
+        width: 280px;
+        height: 100%;
+        transition: right 0.3s ease;
+        z-index: 1000;
+        background: white;
+        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    }
+    .sidebar.active {
+        right: 0;
+    }
+    .menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+    }
+}
+@media (min-width: 769px) {
+    .menu-toggle {
+        display: none;
+    }
+    .sidebar {
+        position: relative;
+        right: 0 !important;
+    }
+}
 </style></head>
 <body><div id="overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;" onclick="closeSidebar()"></div>
     <div class="app-container">
@@ -417,6 +450,39 @@
     font-size: 24px;
     cursor: pointer;
 }
+</style><style>
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: -280px;
+        width: 280px;
+        height: 100%;
+        transition: right 0.3s ease;
+        z-index: 1000;
+        background: white;
+        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    }
+    .sidebar.active {
+        right: 0;
+    }
+    .menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+    }
+}
+@media (min-width: 769px) {
+    .menu-toggle {
+        display: none;
+    }
+    .sidebar {
+        position: relative;
+        right: 0 !important;
+    }
+}
 </style></head><body><div id="overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;" onclick="closeSidebar()"></div>
                 <div class="header"><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p></div>
                 <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
@@ -527,5 +593,6 @@ function closeSidebar() {
 }
 </script></body>
 </html>
+
 
 
