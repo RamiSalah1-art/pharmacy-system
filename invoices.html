@@ -10,17 +10,20 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Cairo', sans-serif;
-            background: #f5f7fa;
-            height: 100vh;
-            overflow: hidden;
+            background: #f0f2f5;
         }
-        .app-container { display: flex; height: 100vh; }
+        .app-container { display: flex; min-height: 100vh; }
+        
+        /* القائمة الجانبية */
         .sidebar {
             width: 260px;
             background: white;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            height: 100%;
+            height: 100vh;
+            position: fixed;
             overflow-y: auto;
+            transition: 0.3s;
+            z-index: 1000;
         }
         .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #e0e0e0; }
         .sidebar-header i { font-size: 40px; color: #2c7da0; }
@@ -41,7 +44,7 @@
             border-top: 1px solid #e0e0e0;
             position: absolute;
             bottom: 0;
-            width: 260px;
+            width: 100%;
         }
         .logout-btn {
             width: 100%;
@@ -52,24 +55,31 @@
             border-radius: 8px;
             cursor: pointer;
         }
+        
+        /* المحتوى الرئيسي */
         .main-content {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            margin-right: 260px;
+            min-height: 100vh;
         }
         .top-bar {
             background: white;
             padding: 15px 25px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .content-wrapper {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
         }
+        .content-wrapper { padding: 20px; }
+        
+        /* الفلترة */
         .filters-bar {
             background: white;
             padding: 15px;
@@ -112,6 +122,8 @@
             text-decoration: none;
             display: inline-block;
         }
+        
+        /* بطاقات الفواتير */
         .invoice-card {
             background: white;
             border-radius: 12px;
@@ -126,6 +138,7 @@
             cursor: pointer;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         .invoice-content { display: none; padding: 20px; }
         .invoice-content.show { display: block; }
@@ -159,62 +172,39 @@
             background: white;
             border-radius: 12px;
         }
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; transform: translateX(-100%); }
-            .sidebar.active { transform: translateX(0); }
-            .detail-row { grid-template-columns: repeat(2, 1fr); }
-            .filters-bar { flex-direction: column; }
-            .filters-bar input, .filters-bar select, .btn-clear { width: 100%; }
-        }
-            /* تنسيق الهاتف */
+        
+        /* استعلامات الهاتف */
         @media (max-width: 768px) {
             .sidebar {
-                position: fixed;
-                top: 0;
                 right: -280px;
-                width: 280px;
-                height: 100%;
+                left: auto;
                 transition: right 0.3s ease;
-                z-index: 1000;
             }
             .sidebar.active {
                 right: 0;
+                left: auto;
             }
             .main-content {
-                width: 100%;
                 margin-right: 0;
+                width: 100%;
             }
             .menu-toggle {
                 display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
             }
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
+            .detail-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
-            .overlay.active {
-                display: block;
+            .filters-bar {
+                flex-direction: column;
+            }
+            .filters-bar input, .filters-bar select, .btn-clear {
+                width: 100%;
             }
         }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-            .overlay {
-                display: none;
-            }
-        }</style>
+    </style>
 </head>
-<body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+<body>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
@@ -272,26 +262,26 @@
             const container = document.getElementById('invoicesList');
             
             if (!invoices || invoices.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><h3>لا توجد فواتير</h3><p>قم بإجراء عملية بيع جديدة</p></div>';
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><h3>لا توجد فواتير</h3><p>قم بإجراء عملية بيع جديدة من نقطة البيع</p></div>';
                 return;
             }
             
             let html = '';
-            invoices.forEach((inv, idx) => {
+            for (let i = 0; i < invoices.length; i++) {
+                const inv = invoices[i];
                 const date = new Date(inv.date);
                 const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
-                const paymentClass = inv.paymentMethod === 'نقدي' ? 'نقدي' : 'تحويل بنكي';
                 
                 html += `
                     <div class="invoice-card">
-                        <div class="invoice-header" onclick="toggleInvoice(${idx})">
+                        <div class="invoice-header" onclick="toggleInvoice(${i})">
                             <div><strong>${inv.number || '-'}</strong><br><small>${formattedDate}</small></div>
                             <div><strong>${(inv.total || 0).toFixed(2)} ج.س</strong> <i class="fas fa-chevron-down"></i></div>
                         </div>
-                        <div class="invoice-content" id="invoice-content-${idx}">
+                        <div class="invoice-content" id="invoice-content-${i}">
                             <div class="detail-row">
                                 <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
-                                <div><strong>طريقة الدفع:</strong> ${paymentClass}</div>
+                                <div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div>
                                 <div><strong>رقم الفاتورة:</strong> ${inv.number || '-'}</div>
                                 <div><strong>التاريخ:</strong> ${formattedDate}</div>
                             </div>
@@ -300,7 +290,7 @@
                                 <table>
                                     <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
                                     <tbody>
-                                        ${inv.items ? inv.items.map(item => `
+                                        ${inv.items && inv.items.length > 0 ? inv.items.map(item => `
                                             <tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>
                                         `).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
                                     </tbody>
@@ -308,22 +298,22 @@
                             </div>
                             <div class="invoice-footer">
                                 <div><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div>
-                                <button class="btn-print" onclick="event.stopPropagation(); printInvoice(${idx})"><i class="fas fa-print"></i> طباعة</button>
+                                <button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})"><i class="fas fa-print"></i> طباعة</button>
                             </div>
                         </div>
                     </div>
                 `;
-            });
+            }
             container.innerHTML = html;
         }
         
-        function toggleInvoice(idx) {
-            const content = document.getElementById(`invoice-content-${idx}`);
+        function toggleInvoice(index) {
+            const content = document.getElementById(`invoice-content-${index}`);
             if (content) content.classList.toggle('show');
         }
         
-        function printInvoice(idx) {
-            const inv = allInvoices[idx];
+        function printInvoice(index) {
+            const inv = allInvoices[index];
             if (!inv) return;
             
             const printWindow = window.open('', '_blank');
@@ -331,67 +321,22 @@
                 <html dir="rtl"><head><title>فاتورة ${inv.number}</title><meta charset="UTF-8">
                 <style>
                     body { font-family: 'Cairo', sans-serif; padding: 20px; }
-                    .header { text-align: center; border-bottom: 2px solid #2c7da0; padding-bottom: 15px; }
+                    .header { text-align: center; border-bottom: 2px solid #2c7da0; padding-bottom: 15px; margin-bottom: 20px; }
                     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
                     .total { margin-top: 15px; text-align: left; font-weight: bold; }
-                        /* تنسيق الهاتف */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
-            }
-            .overlay.active {
-                display: block;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-            .overlay {
-                display: none;
-            }
-        }</style>
-                </head><body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+                    .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #7f8c8d; }
+                </style>
+                </head><body>
                 <div class="header"><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p></div>
                 <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
                 <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
                 <div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div>
                 <table><thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>
-                ${inv.items ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}
+                ${inv.items && inv.items.length > 0 ? inv.items.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`).join('') : ''}
                 </tbody></table>
                 <div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</div>
-                <div style="text-align:center; margin-top:20px;">شكراً لتعاملكم معنا</div>
+                <div class="footer">شكراً لتعاملكم معنا</div>
                 </body></html>
             `);
             printWindow.document.close();
@@ -405,13 +350,11 @@
             let filtered = allInvoices.filter(inv => {
                 let match = true;
                 if (searchText) {
-                    if (!inv.number?.toLowerCase().includes(searchText) && !inv.customerName?.toLowerCase().includes(searchText)) {
-                        match = false;
-                    }
+                    const numMatch = inv.number ? inv.number.toLowerCase().includes(searchText) : false;
+                    const custMatch = inv.customerName ? inv.customerName.toLowerCase().includes(searchText) : false;
+                    if (!numMatch && !custMatch) match = false;
                 }
-                if (paymentMethod !== 'all' && inv.paymentMethod !== paymentMethod) {
-                    match = false;
-                }
+                if (paymentMethod !== 'all' && inv.paymentMethod !== paymentMethod) match = false;
                 return match;
             });
             displayInvoices(filtered);
@@ -423,19 +366,14 @@
             displayInvoices(allInvoices);
         }
         
-                function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('active');
-            if (overlay) overlay.classList.toggle('active');
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
         }
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.remove('active');
-            if (overlay) overlay.classList.remove('active');
+        
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
         }
-        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
         
         document.getElementById('searchInput').addEventListener('input', applyFilters);
         document.getElementById('paymentFilter').addEventListener('change', applyFilters);
@@ -447,4 +385,3 @@
     </script>
 </body>
 </html>
-
