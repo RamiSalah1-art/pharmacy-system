@@ -273,7 +273,7 @@
                                 <div><strong>الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</strong></div>
                                 <div>
                                     <button class="btn-delete-invoice" onclick="event.stopPropagation(); deleteInvoice(${i})"><i class="fas fa-trash"></i> حذف</button>
-                                    <button class="btn-delete-invoice" onclick="event.stopPropagation(); deleteInvoice(${i})" style="background:#e74c3c;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;margin-left:10px;"><i class="fas fa-trash"></i> حذف</button><button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})" style="background:#27ae60;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;"><i class="fas fa-print"></i> طباعة</button>
+                                    <button class="btn-edit-invoice" onclick="event.stopPropagation(); editInvoice(${i})" style="background:#f39c12;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;margin-left:5px;"><i class="fas fa-edit"></i> تعديل</button><button class="btn-delete-invoice" onclick="event.stopPropagation(); deleteInvoice(${i})" style="background:#e74c3c;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;margin-left:5px;"><i class="fas fa-trash"></i> حذف</button><button class="btn-print" onclick="event.stopPropagation(); printInvoice(${i})" style="background:#27ae60;color:white;border:none;padding:5px 15px;border-radius:5px;cursor:pointer;"><i class="fas fa-print"></i> طباعة</button>
                                 </div>
                             </div>
                         </div>
@@ -288,7 +288,18 @@
             if (content) content.classList.toggle('show');
         }
         
-        function deleteInvoice(index) {
+                function editInvoice(index) {
+            const inv = allInvoices[index];
+            if (!inv) return;
+            // فتح نافذة تعديل
+            const newCustomer = prompt('تعديل اسم العميل:', inv.customerName);
+            if (newCustomer !== null) inv.customerName = newCustomer || 'نقدي';
+            const newNotes = prompt('تعديل الملاحظات:', inv.notes || '');
+            if (newNotes !== null) inv.notes = newNotes;
+            localStorage.setItem('invoices', JSON.stringify(allInvoices));
+            displayInvoices(allInvoices);
+            alert('✅ تم تعديل الفاتورة بنجاح');
+        } function deleteInvoice(index) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
             const invoice = allInvoices[index];
             const invoiceNumber = invoice ? invoice.number : 'الفاتورة';
@@ -340,4 +351,5 @@
     </script>
 </body>
 </html>
+
 
