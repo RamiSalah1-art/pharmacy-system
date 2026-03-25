@@ -1,0 +1,121 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تهيئة Firebase - نظام الصيدليات</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .card h1 {
+            color: #2c7da0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-right: 3px solid #2c7da0;
+        }
+        .step h3 {
+            color: #2c7da0;
+            margin-bottom: 10px;
+        }
+        .step code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #2c7da0;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background: #1f5e7a;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1><i class="fas fa-cloud-upload-alt"></i> تهيئة التخزين السحابي</h1>
+        
+        <div class="step">
+            <h3>📌 الخطوة 1: إنشاء مشروع Firebase</h3>
+            <p>اذهب إلى <a href="https://console.firebase.google.com" target="_blank">https://console.firebase.google.com</a></p>
+            <p>أنشئ مشروع جديد باسم <code>pharmacy-system</code></p>
+        </div>
+        
+        <div class="step">
+            <h3>📌 الخطوة 2: تفعيل الخدمات</h3>
+            <p>فعّل الخدمات التالية:</p>
+            <ul>
+                <li><strong>Firestore Database</strong> - قاعدة البيانات</li>
+                <li><strong>Authentication</strong> - المصادقة (اختر Email/Password)</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>📌 الخطوة 3: الحصول على إعدادات Firebase</h3>
+            <p>في إعدادات المشروع، انسخ كود التهيئة (firebaseConfig)</p>
+            <p>ثم افتح ملف <code>js/firebase-config.js</code> واستبدل البيانات</p>
+        </div>
+        
+        <div class="step">
+            <h3>📌 الخطوة 4: تفعيل وضع السحابي</h3>
+            <p>بعد إعداد Firebase، اذهب إلى صفحة الإعدادات في النظام</p>
+            <p>اختر <strong>"تخزين سحابي"</strong> من قائمة وضع التخزين</p>
+        </div>
+        
+        <div class="warning">
+            <i class="fas fa-info-circle"></i>
+            <strong>ملاحظة:</strong> إذا لم تقم بإعداد Firebase، النظام سيعمل بالتخزين المحلي فقط.
+            التخزين السحابي يتيح مزامنة البيانات بين جميع الأجهزة.
+        </div>
+        
+        <a href="settings.html" class="btn">
+            <i class="fas fa-cog"></i> الذهاب إلى الإعدادات
+        </a>
+        
+        <a href="dashboard.html" class="btn" style="background: #95a5a6; margin-top: 10px;">
+            <i class="fas fa-home"></i> تخطي والعودة للوحة التحكم
+        </a>
+    </div>
+</body>
+</html>

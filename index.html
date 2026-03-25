@@ -3,54 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة الصيدليات - تسجيل الدخول</title>
+    <title>تسجيل الدخول - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body class="login-page">
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <i class="fas fa-hospital-user logo-icon"></i>
-                <h1>نظام إدارة الصيدليات</h1>
-                <p>Pharmacy Management System</p>
-            </div>
-            <div class="language-switcher">
-                <button class="lang-btn active">🇸🇦 العربية</button>
-                <button class="lang-btn">🇬🇧 English</button>
-            </div>
-            <form onsubmit="handleLogin(event)">
-                <div class="input-group">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" value="demo@pharmacy.com" placeholder="البريد الإلكتروني" required>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="password" value="demo123" placeholder="كلمة المرور" required>
-                </div>
-                <button type="submit" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
-                </button>
-            </form>
-            <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #95a5a6;">
-                <i class="fas fa-flask"></i> نسخة المطور - تعمل بدون إنترنت
-            </div>
-        </div>
-    </div>
-    <script>
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            if (email === 'demo@pharmacy.com' && password === 'demo123') {
-                sessionStorage.setItem('loggedIn', 'true');
-                sessionStorage.setItem('userName', 'مدير النظام');
-                window.location.href = 'dashboard.html';
-            } else {
-                alert('بيانات الدخول غير صحيحة');
-            }
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+        .box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .box i {
+            font-size: 60px;
+            color: #2c7da0;
+            margin-bottom: 15px;
+        }
+        .box h2 {
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        .box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Cairo', sans-serif;
+        }
+        .box button {
+            width: 100%;
+            padding: 12px;
+            background: #2c7da0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .box button:hover {
+            background: #1f5e7a;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <i class="fas fa-hospital-user"></i>
+        <h2>نظام إدارة الصيدليات</h2>
+        
+        <div id="error" class="error"></div>
+        
+        <input type="email" id="email" placeholder="البريد الإلكتروني">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <button id="loginBtn">تسجيل الدخول</button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6xbkAe6MqNc-gKg-uHU4TpEdHVb0HYaI",
+            authDomain: "pharmacy-system-cafdf.firebaseapp.com",
+            projectId: "pharmacy-system-cafdf",
+            storageBucket: "pharmacy-system-cafdf.firebasestorage.app",
+            messagingSenderId: "802316904728",
+            appId: "1:802316904728:web:84757a51b203aed94d166d"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        const loginBtn = document.getElementById('loginBtn');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorDiv = document.getElementById('error');
+        
+        loginBtn.onclick = function() {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            
+            if (!email || !password) {
+                errorDiv.innerHTML = '❌ يرجى إدخال البريد الإلكتروني وكلمة المرور';
+                errorDiv.style.display = 'block';
+                setTimeout(() => errorDiv.style.display = 'none', 3000);
+                return;
+            }
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = 'جاري...';
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((result) => {
+                    sessionStorage.setItem('loggedIn', 'true');
+                    sessionStorage.setItem('userEmail', result.user.email);
+                    window.location.href = 'dashboard.html';
+                })
+                .catch((err) => {
+                    errorDiv.style.display = 'block';
+                    
+                    if (err.code === 'auth/user-not-found') {
+                        errorDiv.innerHTML = '❌ البريد الإلكتروني غير مسجل';
+                    } else if (err.code === 'auth/wrong-password') {
+                        errorDiv.innerHTML = '❌ كلمة المرور غير صحيحة';
+                    } else {
+                        errorDiv.innerHTML = '❌ خطأ: ' + err.message;
+                    }
+                    
+                    setTimeout(() => {
+                        errorDiv.style.display = 'none';
+                    }, 3000);
+                    
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = 'تسجيل الدخول';
+                });
+        };
     </script>
 </body>
 </html>
-

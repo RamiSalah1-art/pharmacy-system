@@ -5,13 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>العملاء - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
     <style>
-        .customers-container {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f5f7fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .app-container { display: flex; height: 100vh; }
+        .sidebar {
+            width: 260px;
             background: white;
-            border-radius: 15px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            height: 100%;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #e0e0e0; }
+        .sidebar-header i { font-size: 40px; color: #2c7da0; }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: linear-gradient(90deg, #2c7da0, #61a5c2);
+            color: white;
+        }
+        .sidebar-nav i { width: 24px; margin-left: 10px; }
+        .sidebar-footer {
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-top: 1px solid #e0e0e0;
+            position: absolute;
+            bottom: 0;
+            width: 260px;
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .top-bar {
+            background: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
         }
         .header-actions {
             display: flex;
@@ -21,98 +85,51 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            max-width: 300px;
-        }
-        .search-box input {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-family: 'Cairo', sans-serif;
-        }
-        .btn-add {
-            background: linear-gradient(135deg, #2c7da0, #61a5c2);
+        .btn-primary {
+            background: #2c7da0;
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: bold;
         }
-        .btn-add:hover {
-            background: linear-gradient(135deg, #1f5e7a, #2c7da0);
-            transform: translateY(-2px);
+        .table-wrapper {
+            background: white;
+            border-radius: 15px;
+            overflow: auto;
+            max-height: calc(100vh - 150px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .customers-table {
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            overflow-x: auto;
-            display: block;
+            min-width: 700px;
         }
-        .customers-table table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .customers-table th {
-            background: #f8f9fa;
-            padding: 12px;
+        .data-table th, .data-table td {
+            padding: 12px 15px;
             text-align: right;
-            border-bottom: 2px solid #e0e0e0;
-            font-weight: 600;
-        }
-        .customers-table td {
-            padding: 12px;
             border-bottom: 1px solid #e0e0e0;
         }
-        .customers-table tr:hover {
+        .data-table th {
             background: #f8f9fa;
+            position: sticky;
+            top: 0;
         }
         .btn-edit {
             background: #f39c12;
             color: white;
+            padding: 5px 10px;
             border: none;
-            padding: 6px 12px;
             border-radius: 5px;
             cursor: pointer;
-            margin: 0 3px;
         }
         .btn-delete {
             background: #e74c3c;
             color: white;
+            padding: 5px 10px;
             border: none;
-            padding: 6px 12px;
             border-radius: 5px;
             cursor: pointer;
-            margin: 0 3px;
-        }
-        .btn-view {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 0 3px;
-        }
-        .btn-edit:hover, .btn-delete:hover, .btn-view:hover {
-            opacity: 0.8;
-            transform: translateY(-1px);
-        }
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            color: #95a5a6;
-        }
-        .empty-state i {
-            font-size: 60px;
-            margin-bottom: 15px;
         }
         .modal {
             display: none;
@@ -121,116 +138,50 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.5);
             z-index: 2000;
             align-items: center;
             justify-content: center;
         }
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         .modal-content {
             background: white;
-            border-radius: 20px;
+            border-radius: 15px;
             width: 90%;
             max-width: 500px;
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         .modal-header {
-            background: linear-gradient(135deg, #2c7da0, #61a5c2);
+            background: #2c7da0;
             color: white;
-            padding: 20px;
-            border-radius: 20px 20px 0 0;
+            padding: 15px;
+            border-radius: 15px 15px 0 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
-        .modal-header h3 {
-            margin: 0;
-        }
-        .modal-header .close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .modal-body {
-            padding: 20px;
-        }
+        .modal-body { padding: 20px; }
         .modal-footer {
-            padding: 15px 20px;
-            border-top: 1px solid #e0e0e0;
+            padding: 15px;
+            border-top: 1px solid #ddd;
             display: flex;
             justify-content: flex-end;
             gap: 10px;
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
         .form-group input {
             width: 100%;
             padding: 10px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            font-family: 'Cairo', sans-serif;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #2c7da0;
-        }
-        .btn-save {
-            background: #27ae60;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-cancel {
-            background: #95a5a6;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .total-spent {
-            font-weight: bold;
-            color: #27ae60;
         }
         @media (max-width: 768px) {
-            .customers-table {
-                overflow-x: auto;
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                z-index: 100;
             }
-            .header-actions {
-                flex-direction: column;
-            }
-            .search-box {
-                max-width: 100%;
-            }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-right: 0; }
         }
     </style>
 </head>
@@ -239,184 +190,94 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i><span>لوحة التحكم</span></a>
-                <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i><span>المخزون</span></a>
-                <a href="pos.html" class="nav-item"><i class="fas fa-cash-register"></i><span>نقطة البيع</span></a>
-                <a href="customers.html" class="nav-item active"><i class="fas fa-users"></i><span>العملاء</span></a>
-                <a href="invoices.html" class="nav-item"><i class="fas fa-file-invoice"></i><span>الفواتير</span></a><a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a>
-                <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>الإعدادات</span></a>
+                <a href="dashboard.html"><i class="fas fa-chart-line"></i> لوحة التحكم</a>
+                <a href="inventory.html"><i class="fas fa-boxes"></i> المخزون</a>
+                <a href="pos.html"><i class="fas fa-cash-register"></i> نقطة البيع</a>
+                <a href="customers.html" class="active"><i class="fas fa-users"></i> العملاء</a>
+                <a href="invoices.html"><i class="fas fa-file-invoice"></i> الفواتير</a>
+                <a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a>
+                <a href="settings.html"><i class="fas fa-cog"></i> الإعدادات</a>
             </nav>
-            <div class="sidebar-footer"><button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>تسجيل الخروج</span></button></div>
+            <div class="sidebar-footer"><button onclick="logout()" class="logout-btn">تسجيل الخروج</button></div>
         </aside>
         <main class="main-content">
             <header class="top-bar">
-                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-                <div class="user-info"><span id="user-name"></span><i class="fas fa-user-circle"></i></div>
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <div><span id="userName"></span> <i class="fas fa-user-circle"></i></div>
             </header>
             <div class="content-wrapper">
-                <div class="customers-container">
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <input type="text" id="searchInput" placeholder="🔍 بحث باسم العميل أو رقم الهاتف...">
-                            <button onclick="clearSearch()" style="background: #95a5a6; color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer;">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <button class="btn-add" onclick="openAddModal()">
-                            <i class="fas fa-user-plus"></i> إضافة عميل جديد
-                        </button>
-                    </div>
-                    
-                    <div class="customers-table" id="customersTable">
-                        <div class="empty-state">
-                            <i class="fas fa-users"></i>
-                            <h3>جاري تحميل العملاء...</h3>
-                        </div>
-                    </div>
+                <div class="header-actions">
+                    <h1>👥 العملاء</h1>
+                    <button class="btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> إضافة عميل</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><th>#</th><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>العنوان</th><th>إجمالي المشتريات</th><th>الإجراءات</th></thead>
+                        <tbody id="customersList"></tbody>
+                     </table>
                 </div>
             </div>
         </main>
     </div>
-    
-    <!-- Modal إضافة/تعديل عميل -->
+
     <div id="customerModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">➕ إضافة عميل جديد</h3>
-                <button class="close" onclick="closeModal()">&times;</button>
-            </div>
+            <div class="modal-header"><h3 id="modalTitle">إضافة عميل</h3><button onclick="closeModal()" style="background:none;border:none;color:white;font-size:20px;">&times;</button></div>
             <div class="modal-body">
                 <input type="hidden" id="customerId">
-                <div class="form-group">
-                    <label>👤 اسم العميل <span style="color: red;">*</span></label>
-                    <input type="text" id="customerName" placeholder="أدخل اسم العميل">
-                </div>
-                <div class="form-group">
-                    <label>📞 رقم الهاتف</label>
-                    <input type="tel" id="customerPhone" placeholder="مثال: 0501234567">
-                </div>
-                <div class="form-group">
-                    <label>📧 البريد الإلكتروني</label>
-                    <input type="email" id="customerEmail" placeholder="example@email.com">
-                </div>
-                <div class="form-group">
-                    <label>📍 العنوان</label>
-                    <input type="text" id="customerAddress" placeholder="العنوان (اختياري)">
-                </div>
+                <div class="form-group"><label>اسم العميل *</label><input type="text" id="customerName" placeholder="مثال: أحمد محمد"></div>
+                <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="customerPhone" placeholder="0123456789"></div>
+                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="customerEmail" placeholder="example@email.com"></div>
+                <div class="form-group"><label>العنوان</label><input type="text" id="customerAddress" placeholder="الرياض - السودان"></div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeModal()">
-                    <i class="fas fa-times"></i> إلغاء
-                </button>
-                <button class="btn-save" onclick="saveCustomer()">
-                    <i class="fas fa-save"></i> حفظ
-                </button>
-            </div>
+            <div class="modal-footer"><button onclick="closeModal()">إلغاء</button><button onclick="saveCustomer()" style="background:#27ae60;color:white;">حفظ</button></div>
         </div>
     </div>
-    
+
     <script>
-        let allCustomers = [];
+        let customers = [];
         
-        // تحميل العملاء
         function loadCustomers() {
-            console.log("===== تحميل العملاء =====");
-            
-            try {
-                const stored = localStorage.getItem('customers');
-                if (stored) {
-                    allCustomers = JSON.parse(stored);
-                    console.log("تم تحميل العملاء:", allCustomers.length);
-                } else {
-                    // عملاء افتراضيين
-                    allCustomers = [
-                        { id: 1, name: "أحمد محمد", phone: "0501234567", email: "ahmed@email.com", address: "الرياض", totalSpent: 1250 },
-                        { id: 2, name: "سارة علي", phone: "0551234567", email: "<span class="currency-symbol">ج.س</span>a@email.com", address: "جدة", totalSpent: 890 },
-                        { id: 3, name: "محمد عبدالله", phone: "0561234567", email: "mohammed@email.com", address: "الدمام", totalSpent: 2340 }
-                    ];
-                    localStorage.setItem('customers', JSON.stringify(allCustomers));
-                    console.log("تم إنشاء عملاء افتراضيين");
-                }
-                displayCustomers(allCustomers);
-            } catch (error) {
-                console.error("خطأ في تحميل العملاء:", error);
-                document.getElementById('customersTable').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>حدث خطأ في تحميل العملاء</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
+            const stored = localStorage.getItem('customers');
+            if (stored) {
+                customers = JSON.parse(stored);
+            } else {
+                customers = [
+                    { id: 1, name: "أحمد محمد", phone: "0123456789", email: "ahmed@email.com", address: "الرياض", totalSpent: 1250 },
+                    { id: 2, name: "سارة علي", phone: "0112345678", email: "sara@email.com", address: "جدة", totalSpent: 890 },
+                    { id: 3, name: "محمد عبدالله", phone: "0561234567", email: "mohammed@email.com", address: "الدمام", totalSpent: 2340 }
+                ];
+                localStorage.setItem('customers', JSON.stringify(customers));
             }
+            displayCustomers();
         }
         
-        // عرض العملاء
-        function displayCustomers(customers) {
-            const container = document.getElementById('customersTable');
-            
-            if (!customers || customers.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-users"></i>
-                        <h3>لا يوجد عملاء</h3>
-                        <p>قم بإضافة عميل جديد بالضغط على الزر أعلاه</p>
-                    </div>
-                `;
+        function displayCustomers() {
+            const tbody = document.getElementById('customersList');
+            if (!customers.length) {
+                tbody.innerHTML = '病人<td colspan="7" style="text-align:center;">لا يوجد عملاء</td></tr>';
                 return;
             }
-            
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>اسم العميل</th>
-                            <th>رقم الهاتف</th>
-                            <th>البريد الإلكتروني</th>
-                            <th>العنوان</th>
-                            <th>إجمالي المشتريات</th>
-                            <th>الإجراءات</th>
-                        </thead>
-                        <tbody>
-            `;
-            
-            for (let i = 0; i < customers.length; i++) {
-                const c = customers[i];
-                html += `
-                    <tr>
-                        <td>${i + 1}</td>
-                        <td><strong>${c.name}</strong></td>
-                        <td>${c.phone || '-'}</td>
-                        <td>${c.email || '-'}</td>
-                        <td>${c.address || '-'}</td>
-                        <td class="total-spent">${(c.totalSpent || 0).toFixed(2)} <span class="currency-symbol">ج.س</span></td>
-                        <td>
-                            <button class="btn-view" onclick="viewCustomer(${c.id})">
-                                <i class="fas fa-eye"></i> عرض
-                            </button>
-                            <button class="btn-edit" onclick="editCustomer(${c.id})">
-                                <i class="fas fa-edit"></i> تعديل
-                            </button>
-                            <button class="btn-delete" onclick="deleteCustomer(${c.id})">
-                                <i class="fas fa-trash"></i> حذف
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }
-            
-            html += `
-                        </tbody>
-                    </table>
-                `;
-            
-            container.innerHTML = html;
+            let html = '';
+            customers.forEach((c, i) => {
+                html += `<tr>
+                    <td>${i+1}</td>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.phone || '-'}</td>
+                    <td>${c.email || '-'}</td>
+                    <td>${c.address || '-'}</td>
+                    <td style="color:#27ae60;">${(c.totalSpent || 0).toFixed(2)} ج.س</td>
+                    <td>
+                        <button class="btn-edit" onclick="editCustomer(${c.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteCustomer(${c.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
         }
         
-        // فتح نافذة إضافة عميل
         function openAddModal() {
-            console.log("فتح نافذة إضافة عميل");
-            document.getElementById('modalTitle').innerHTML = '➕ إضافة عميل جديد';
+            document.getElementById('modalTitle').innerHTML = '➕ إضافة عميل';
             document.getElementById('customerId').value = '';
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
@@ -425,210 +286,57 @@
             document.getElementById('customerModal').classList.add('active');
         }
         
-        // حفظ العميل (إضافة أو تعديل)
         function saveCustomer() {
-            console.log("===== حفظ العميل =====");
-            
             const id = document.getElementById('customerId').value;
             const name = document.getElementById('customerName').value.trim();
+            if (!name) { alert('⚠️ اسم العميل مطلوب'); return; }
+            const phone = document.getElementById('customerPhone').value;
+            const email = document.getElementById('customerEmail').value;
+            const address = document.getElementById('customerAddress').value;
             
-            if (!name) {
-                alert('⚠️ يرجى إدخال اسم العميل');
-                return;
-            }
-            
-            const phone = document.getElementById('customerPhone').value.trim();
-            const email = document.getElementById('customerEmail').value.trim();
-            const address = document.getElementById('customerAddress').value.trim();
-            
-            let customers = JSON.parse(localStorage.getItem('customers') || '[]');
-            
-            if (id === '' || id === null || id === undefined) {
-                // إضافة عميل جديد
-                const newId = customers.length > 0 ? Math.max(...customers.map(c => c.id)) + 1 : 1;
-                
-                const newCustomer = {
-                    id: newId,
-                    name: name,
-                    phone: phone,
-                    email: email,
-                    address: address,
-                    totalSpent: 0
-                };
-                
-                customers.push(newCustomer);
-                localStorage.setItem('customers', JSON.stringify(customers));
-                
-                console.log("تم إضافة العميل:", newCustomer);
-                alert(`✅ تم إضافة العميل "${name}" بنجاح`);
-                
+            if (id === '') {
+                const newId = customers.length ? Math.max(...customers.map(c => c.id)) + 1 : 1;
+                customers.push({ id: newId, name, phone, email, address, totalSpent: 0 });
+                alert('✅ تم إضافة العميل');
             } else {
-                // تعديل عميل موجود
                 const index = customers.findIndex(c => c.id == id);
                 if (index !== -1) {
-                    customers[index] = {
-                        ...customers[index],
-                        name: name,
-                        phone: phone,
-                        email: email,
-                        address: address
-                    };
-                    localStorage.setItem('customers', JSON.stringify(customers));
-                    console.log("تم تعديل العميل ID:", id);
-                    alert(`✅ تم تعديل العميل "${name}" بنجاح`);
-                } else {
-                    alert('❌ لم يتم العثور على العميل');
-                    closeModal();
-                    return;
+                    customers[index] = { ...customers[index], name, phone, email, address };
+                    alert('✅ تم تعديل العميل');
                 }
             }
-            
+            localStorage.setItem('customers', JSON.stringify(customers));
             closeModal();
-            loadCustomers(); // إعادة تحميل الجدول
+            loadCustomers();
         }
         
-        // تعديل عميل
         function editCustomer(id) {
-            console.log("تعديل العميل ID:", id);
-            
-            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
-            const customer = customers.find(c => c.id === id);
-            
-            if (!customer) {
-                alert('❌ لم يتم العثور على العميل');
-                return;
-            }
-            
-            document.getElementById('modalTitle').innerHTML = '✏️ تعديل بيانات العميل';
-            document.getElementById('customerId').value = customer.id;
-            document.getElementById('customerName').value = customer.name;
-            document.getElementById('customerPhone').value = customer.phone || '';
-            document.getElementById('customerEmail').value = customer.email || '';
-            document.getElementById('customerAddress').value = customer.address || '';
+            const c = customers.find(c => c.id === id);
+            if (!c) return;
+            document.getElementById('modalTitle').innerHTML = '✏️ تعديل العميل';
+            document.getElementById('customerId').value = c.id;
+            document.getElementById('customerName').value = c.name;
+            document.getElementById('customerPhone').value = c.phone || '';
+            document.getElementById('customerEmail').value = c.email || '';
+            document.getElementById('customerAddress').value = c.address || '';
             document.getElementById('customerModal').classList.add('active');
         }
         
-        // عرض تفاصيل العميل
-        function viewCustomer(id) {
-            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
-            const customer = customers.find(c => c.id === id);
-            
-            if (!customer) {
-                alert('❌ لم يتم العثور على العميل');
-                return;
-            }
-            
-            let details = `
-                📋 معلومات العميل
-                ─────────────────────
-                👤 الاسم: ${customer.name}
-                📞 الهاتف: ${customer.phone || 'غير محدد'}
-                📧 البريد: ${customer.email || 'غير محدد'}
-                📍 العنوان: ${customer.address || 'غير محدد'}
-                💰 إجمالي المشتريات: ${(customer.totalSpent || 0).toFixed(2)} <span class="currency-symbol">ج.س</span>
-            `;
-            
-            // عرض فواتير العميل
-            const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-            const customerInvoices = invoices.filter(inv => inv.customerId === id);
-            
-            if (customerInvoices.length > 0) {
-                details += `\n\n📄 الفواتير (${customerInvoices.length}):\n`;
-                customerInvoices.forEach(inv => {
-                    details += `   • ${inv.number} - ${inv.total.toFixed(2)} <span class="currency-symbol">ج.س</span> - ${new Date(inv.date).toLocaleDateString('ar-SA')}\n`;
-                });
-            } else {
-                details += `\n\n📄 لا توجد فواتير مسجلة لهذا العميل`;
-            }
-            
-            alert(details);
-        }
-        
-        // حذف عميل
         function deleteCustomer(id) {
-            if (!confirm('⚠️ هل أنت متأكد من حذف هذا العميل؟\n\nسيتم حذف جميع بيانات العميل بشكل نهائي.')) {
-                return;
-            }
-            
-            let customers = JSON.parse(localStorage.getItem('customers') || '[]');
-            const customerName = customers.find(c => c.id === id)?.name || 'العميل';
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا العميل؟')) return;
             customers = customers.filter(c => c.id !== id);
             localStorage.setItem('customers', JSON.stringify(customers));
-            
-            console.log("تم حذف العميل ID:", id);
-            alert(`🗑️ تم حذف "${customerName}" بنجاح`);
             loadCustomers();
         }
         
-        // البحث
-        function searchCustomers() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            
-            if (!searchText) {
-                displayCustomers(allCustomers);
-                return;
-            }
-            
-            const filtered = allCustomers.filter(c => 
-                c.name.toLowerCase().includes(searchText) || 
-                (c.phone && c.phone.includes(searchText))
-            );
-            
-            displayCustomers(filtered);
-        }
+        function closeModal() { document.getElementById('customerModal').classList.remove('active'); }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
         
-        // مسح البحث
-        function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            displayCustomers(allCustomers);
-        }
-        
-        // إغلاق المودال
-        function closeModal() {
-            document.getElementById('customerModal').classList.remove('active');
-        }
-        
-        // دوال مساعدة
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        }
-        
-        function logout() {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        }
-        
-        // إضافة مستمع للبحث
-        document.getElementById('searchInput').addEventListener('input', searchCustomers);
-        
-        // تهيئة الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!sessionStorage.getItem('loggedIn')) {
-                window.location.href = 'index.html';
-            }
-            document.getElementById('user-name').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
-            loadCustomers();
-        });
-        
-        // إغلاق المودال عند الضغط خارجها
-        window.onclick = function(event) {
-            const modal = document.getElementById('customerModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
+        document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
+        if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
+        loadCustomers();
     </script>
-<script>
-function updateCurrencySymbol() {
-    const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
-    const currency = settings.currencySymbol || 'ج.س';
-    document.querySelectorAll('.currency-symbol').forEach(el => {
-        el.innerHTML = currency;
-    });
-}
-document.addEventListener('DOMContentLoaded', updateCurrencySymbol);
-</script></body>
+</body>
 </html>
-
-
 

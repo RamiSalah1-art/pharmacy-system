@@ -1,0 +1,816 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المطور - نظام الصيدليات</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+        }
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+        }
+        .sidebar-header {
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-header i {
+            font-size: 50px;
+            color: #f39c12;
+        }
+        .sidebar-header h3 {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: 0.3s;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(255,255,255,0.1);
+            color: #f39c12;
+        }
+        .sidebar-nav i {
+            width: 24px;
+        }
+        .main-content {
+            margin-right: 280px;
+            padding: 20px;
+        }
+        .top-bar {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2c7da0, #61a5c2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-icon i {
+            font-size: 28px;
+            color: white;
+        }
+        .stat-info h3 {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .table-container h3 {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .status-expired {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 3px;
+        }
+        .btn-edit {
+            background: #f39c12;
+            color: white;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-add {
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-header {
+            padding: 15px 20px;
+            background: #2c7da0;
+            color: white;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-code"></i>
+            <h3>لوحة تحكم المطور</h3>
+            <small>Rami Salah</small>
+        </div>
+        <nav class="sidebar-nav">
+            <a onclick="showPage('dashboard')"><i class="fas fa-chart-line"></i> الرئيسية</a>
+            <a onclick="showPage('clients')"><i class="fas fa-store"></i> الصيدليات</a>
+            <a onclick="showPage('licenses')"><i class="fas fa-key"></i> التراخيص</a>
+            <a onclick="showPage('subscriptions')"><i class="fas fa-calendar-alt"></i> الاشتراكات</a>
+            <a onclick="showPage('sales')"><i class="fas fa-chart-simple"></i> المبيعات</a>
+            <a onclick="showPage('settings')"><i class="fas fa-cog"></i> الإعدادات</a>
+        </nav>
+    </div>
+    
+    <div class="main-content">
+        <div class="top-bar">
+            <button class="menu-toggle" onclick="toggleSidebar()" style="background: none; border: none; font-size: 20px;">☰</button>
+            <div>
+                <i class="fas fa-user-circle"></i>
+                <span>مرحباً، Rami Salah</span>
+            </div>
+        </div>
+        
+        <!-- صفحة الرئيسية -->
+        <div id="dashboard-page">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-store"></i></div><div class="stat-info"><h3>إجمالي الصيدليات</h3><p class="stat-value" id="total-pharmacies">0</p></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h3>اشتراكات نشطة</h3><p class="stat-value" id="active-subscriptions">0</p></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-key"></i></div><div class="stat-info"><h3>التراخيص الصادرة</h3><p class="stat-value" id="total-licenses">0</p></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-info"><h3>الإيرادات</h3><p class="stat-value" id="total-revenue">0 ج.س</p></div></div>
+            </div>
+            <div class="table-container">
+                <h3>📋 آخر الصيدليات المسجلة</h3>
+                <table class="data-table"><thead><th>اسم الصيدلية</th><th>المسؤول</th><th>الهاتف</th><th>تاريخ الانتهاء</th><th>الحالة</th></thead><tbody id="recent-clients"></tbody></table>
+            </div>
+        </div>
+        
+        <!-- صفحة الصيدليات -->
+        <div id="clients-page" style="display: none;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h2>🏥 الصيدليات المشتركة</h2>
+                <button class="btn btn-add" onclick="openClientModal()"><i class="fas fa-plus"></i> إضافة صيدلية</button>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead><th>#</th><th>اسم الصيدلية</th><th>المسؤول</th><th>الهاتف</th><th>البريد</th><th>مفتاح الترخيص</th><th>تاريخ الانتهاء</th><th>الحالة</th><th>الإجراءات</th></thead>
+                    <tbody id="clients-list"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- صفحة التراخيص -->
+        <div id="licenses-page" style="display: none;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h2>🔑 إدارة التراخيص</h2>
+                <button class="btn btn-add" onclick="openLicenseModal()"><i class="fas fa-plus"></i> إنشاء ترخيص جديد</button>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead><th>مفتاح الترخيص</th><th>الصيدلية</th><th>تاريخ الإنشاء</th><th>تاريخ الانتهاء</th><th>المبلغ</th><th>الحالة</th><th>الإجراءات</th></thead>
+                    <tbody id="licenses-list"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- صفحة الاشتراكات -->
+        <div id="subscriptions-page" style="display: none;">
+            <h2>📅 الاشتراكات</h2>
+            <div class="table-container">
+                <table class="data-table"><thead><th>الصيدلية</th><th>مفتاح الترخيص</th><th>تاريخ البدء</th><th>تاريخ الانتهاء</th><th>المبلغ</th><th>الحالة</th></thead><tbody id="subscriptions-list"></tbody></table>
+            </div>
+        </div>
+        
+        <!-- صفحة المبيعات -->
+        <div id="sales-page" style="display: none;">
+            <h2>💰 المبيعات والإيرادات</h2>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-info"><h3>إجمالي الإيرادات</h3><p class="stat-value" id="revenue-total">0 ج.س</p></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar"></i></div><div class="stat-info"><h3>هذا الشهر</h3><p class="stat-value" id="month-revenue">0 ج.س</p></div></div>
+            </div>
+            <div class="table-container">
+                <h3>سجل المدفوعات</h3>
+                <table class="data-table"><thead><th>التاريخ</th><th>الصيدلية</th><th>مفتاح الترخيص</th><th>المبلغ</th><th>المدة</th></thead><tbody id="payments-list"></tbody></table>
+            </div>
+        </div>
+        
+        <!-- صفحة الإعدادات -->
+        <div id="settings-page" style="display: none;">
+            <h2>⚙️ إعدادات المطور</h2>
+            <div class="table-container" style="padding: 20px;">
+                <div class="form-group"><label>رقم واتساب</label><input type="text" id="whatsapp-number" value="0123456789"></div>
+                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="developer-email" value="ramiseryani1995@gmail.com"></div>
+                <div class="form-group"><label>رابط النظام التجريبي</label><input type="text" id="demo-url" value="https://ramisalah1-art.github.io/pharmacy-system/"></div>
+                <button class="btn btn-add" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal إضافة/تعديل صيدلية -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="modalTitle">إضافة صيدلية جديدة</h3><button onclick="closeModal('clientModal')" style="background:none;border:none;color:white;font-size:20px;">&times;</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="clientId">
+                <div class="form-group"><label>اسم الصيدلية *</label><input type="text" id="pharmacyName" placeholder="مثال: صيدلية السلام"></div>
+                <div class="form-group"><label>اسم المسؤول</label><input type="text" id="ownerName" placeholder="اسم المسؤول"></div>
+                <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="phone" placeholder="0123456789"></div>
+                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="email" placeholder="info@pharmacy.com"></div>
+                <div class="form-group"><label>مدة الاشتراك (شهر)</label><select id="duration"><option value="12">12 شهر (سنة)</option><option value="6">6 أشهر</option><option value="3">3 أشهر</option><option value="1">شهر واحد</option></select></div>
+                                <div class="form-group">
+                    <label>نوع التخزين</label>
+                    <select id="licenseStorageType">
+                        <option value="local">📁 تخزين محلي (باقة أساسية)</option>
+                        <option value="cloud">☁️ تخزين سحابي (باقة احترافية/مؤسسية)</option>
+                    </select>
+                    <small>🔑 يحدد طريقة عمل النظام للعميل</small>
+                </div>
+                <div class="form-group"><label>المبلغ (ج.س)</label><input type="number" id="amount" placeholder="المبلغ"></div>
+            </div>
+            <div class="modal-footer"><button onclick="closeModal('clientModal')" style="background:#95a5a6;color:white;padding:8px20px;border:none;border-radius:5px;">إلغاء</button><button onclick="saveClient()" style="background:#27ae60;color:white;padding:8px20px;border:none;border-radius:5px;">حفظ</button></div>
+        </div>
+    </div>
+    
+    <!-- Modal إنشاء ترخيص -->
+    <div id="licenseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>🔑 إنشاء ترخيص جديد</h3><button onclick="closeModal('licenseModal')" style="background:none;border:none;color:white;font-size:20px;">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>اسم الصيدلية *</label><input type="text" id="licensePharmacyName" placeholder="مثال: صيدلية السلام"></div>
+                <div class="form-group"><label>مدة الاشتراك (شهر)</label><select id="licenseDuration"><option value="1">شهر واحد</option><option value="3">3 أشهر</option><option value="6">6 أشهر</option><option value="12" selected>12 شهر (سنة)</option></select></div>
+                                <div class="form-group">
+                    <label>نوع التخزين</label>
+                    <select id="licenseStorageType">
+                        <option value="local">📁 تخزين محلي (باقة أساسية)</option>
+                        <option value="cloud">☁️ تخزين سحابي (باقة احترافية/مؤسسية)</option>
+                    </select>
+                    <small>🔑 يحدد طريقة عمل النظام للعميل</small>
+                </div>
+                <div class="form-group"><label>المبلغ (ج.س)</label><input type="number" id="licenseAmount" placeholder="المبلغ"></div>
+                <div class="form-group"><label>مفتاح الترخيص (يولد تلقائياً)</label><input type="text" id="licenseKeyDisplay" readonly style="background:#f0f0f0;font-family:monospace;"></div>
+            </div>
+            <div class="modal-footer"><button onclick="closeModal('licenseModal')" style="background:#95a5a6;color:white;padding:8px20px;border:none;border-radius:5px;">إلغاء</button><button onclick="generateLicense()" style="background:#27ae60;color:white;padding:8px20px;border:none;border-radius:5px;">إنشاء الترخيص</button></div>
+        </div>
+    </div>
+    
+    <script>
+        let clients = [];
+        let licenses = {};
+        
+        // تحميل البيانات
+        function loadData() {
+            // تحميل الصيدليات
+            const storedClients = localStorage.getItem('developer_clients');
+            if (storedClients) {
+                clients = JSON.parse(storedClients);
+            } else {
+                clients = [];
+            }
+            
+            // تحميل التراخيص
+            const storedLicenses = localStorage.getItem('valid_licenses');
+            if (storedLicenses) {
+                licenses = JSON.parse(storedLicenses);
+            } else {
+                licenses = {};
+            }
+            
+            updateStats();
+            displayClients();
+            displayLicenses();
+            displayRecentClients();
+            displaySubscriptions();
+            displayPayments();
+        }
+        
+        // تحديث الإحصائيات
+        function updateStats() {
+            const activeClients = clients.filter(c => {
+                if (!c.endDate) return false;
+                return new Date(c.endDate) > new Date();
+            }).length;
+            
+            const totalLicenses = Object.keys(licenses).length;
+            const revenue = clients.reduce((sum, c) => sum + (c.amount || 0), 0);
+            
+            document.getElementById('total-pharmacies').innerHTML = clients.length;
+            document.getElementById('active-subscriptions').innerHTML = activeClients;
+            document.getElementById('total-licenses').innerHTML = totalLicenses;
+            document.getElementById('total-revenue').innerHTML = revenue.toLocaleString() + ' ج.س';
+            document.getElementById('revenue-total').innerHTML = revenue.toLocaleString() + ' ج.س';
+            document.getElementById('month-revenue').innerHTML = (revenue / 12).toFixed(0) + ' ج.س';
+        }
+        
+        // عرض الصيدليات
+        function displayClients() {
+            const tbody = document.getElementById('clients-list');
+            if (!tbody) return;
+            
+            if (clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد صيدليات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            clients.forEach((c, i) => {
+                const isActive = c.endDate ? new Date(c.endDate) > new Date() : false;
+                const statusClass = isActive ? 'status-active' : 'status-expired';
+                const statusText = isActive ? 'نشط' : 'منتهي';
+                const licenseKey = c.licenseKey || '-';
+                
+                html += `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${c.name}</td>
+                        <td>${c.owner || '-'}</td>
+                        <td>${c.phone || '-'}</td>
+                        <td>${c.email || '-'}</td>
+                        <td><code>${licenseKey}</code></td>
+                        <td>${c.endDate ? new Date(c.endDate).toLocaleDateString('ar-SA') : '-'}</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-edit" onclick="editClient(${c.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-delete" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        // عرض التراخيص
+        function displayLicenses() {
+            const tbody = document.getElementById('licenses-list');
+            if (!tbody) return;
+            
+            if (Object.keys(licenses).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد تراخيص</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            const now = new Date();
+            
+            Object.entries(licenses).forEach(([key, license]) => {
+                const expiryDate = new Date(license.expiryDate);
+                const isActive = expiryDate > now;
+                const statusClass = isActive ? 'status-active' : 'status-expired';
+                const statusText = isActive ? 'نشط' : 'منتهي';
+                
+                html += `
+                    <tr>
+                        <td><code style="background:#f0f0f0;padding:4px 8px;border-radius:5px;">${key}</code></td>
+                        <td>${license.pharmacyName}</td>
+                        <td>${license.createdAt ? new Date(license.createdAt).toLocaleDateString('ar-SA') : '-'}</td>
+                        <td>${new Date(license.expiryDate).toLocaleDateString('ar-SA')}</td>
+                        <td>${(license.amount || 0).toLocaleString()} ج.س</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-edit" onclick="editLicense('${key}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-delete" onclick="deleteLicense('${key}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        // عرض آخر الصيدليات
+        function displayRecentClients() {
+            const tbody = document.getElementById('recent-clients');
+            if (!tbody) return;
+            
+            if (clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد صيدليات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            clients.slice(0, 5).forEach(c => {
+                const isActive = c.endDate ? new Date(c.endDate) > new Date() : false;
+                const statusClass = isActive ? 'status-active' : 'status-expired';
+                const statusText = isActive ? 'نشط' : 'منتهي';
+                html += `<tr><td>${c.name}</td><td>${c.owner || '-'}</td><td>${c.phone || '-'}</td><td>${c.endDate ? new Date(c.endDate).toLocaleDateString('ar-SA') : '-'}</td><td><span class="${statusClass}">${statusText}</span></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        // عرض الاشتراكات
+        function displaySubscriptions() {
+            const tbody = document.getElementById('subscriptions-list');
+            if (!tbody) return;
+            
+            if (clients.length === 0 && Object.keys(licenses).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا توجد اشتراكات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            clients.forEach(c => {
+                const isActive = c.endDate ? new Date(c.endDate) > new Date() : false;
+                const statusClass = isActive ? 'status-active' : 'status-expired';
+                const statusText = isActive ? 'نشط' : 'منتهي';
+                html += `<tr><td>${c.name}</td><td><code>${c.licenseKey || '-'}</code></td><td>${c.startDate ? new Date(c.startDate).toLocaleDateString('ar-SA') : '-'}</td><td>${c.endDate ? new Date(c.endDate).toLocaleDateString('ar-SA') : '-'}</td><td>${(c.amount || 0).toLocaleString()} ج.س</td><td><span class="${statusClass}">${statusText}</span></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        // عرض المدفوعات
+        function displayPayments() {
+            const tbody = document.getElementById('payments-list');
+            if (!tbody) return;
+            
+            if (clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد مدفوعات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            clients.forEach(c => {
+                html += `<tr><td>${c.startDate ? new Date(c.startDate).toLocaleDateString('ar-SA') : '-'}</td><td>${c.name}</td><td><code>${c.licenseKey || '-'}</code></td><td>${(c.amount || 0).toLocaleString()} ج.س</td><td>${c.duration || '12'} شهر</td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        // فتح نافذة إضافة صيدلية
+        function openClientModal() {
+            document.getElementById('modalTitle').innerHTML = 'إضافة صيدلية جديدة';
+            document.getElementById('clientId').value = '';
+            document.getElementById('pharmacyName').value = '';
+            document.getElementById('ownerName').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('duration').value = '12';
+            document.getElementById('amount').value = '';
+            document.getElementById('clientModal').classList.add('active');
+        }
+        
+        // فتح نافذة إنشاء ترخيص
+        function openLicenseModal() {
+            document.getElementById('licensePharmacyName').value = '';
+            document.getElementById('licenseDuration').value = '12';
+            document.getElementById('licenseAmount').value = '';
+            
+            // توليد مفتاح عشوائي
+            const randomKey = 'LIC-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + 
+                              Math.random().toString(36).substring(2, 6).toUpperCase() + '-' +
+                              Math.random().toString(36).substring(2, 6).toUpperCase();
+            document.getElementById('licenseKeyDisplay').value = randomKey;
+            
+            document.getElementById('licenseModal').classList.add('active');
+        }
+        
+        // إنشاء ترخيص
+        function generateLicense() {
+            const pharmacyName = document.getElementById('licensePharmacyName').value.trim();
+            if (!pharmacyName) {
+                alert('⚠️ يرجى إدخال اسم الصيدلية');
+                return;
+            }
+            
+            const duration = parseInt(document.getElementById('licenseDuration').value);
+            const amount = parseFloat(document.getElementById('licenseAmount').value) || (duration === 12 ? 50000 : (duration === 6 ? 30000 : (duration === 3 ? 18000 : 7000)));
+            const licenseKey = document.getElementById('licenseKeyDisplay').value;
+            
+            const expiryDate = new Date();
+            expiryDate.setMonth(expiryDate.getMonth() + duration);
+            const startDate = new Date();
+            
+            // إنشاء الترخيص
+            licenses[licenseKey] = {
+                pharmacyName: pharmacyName,
+                expiryDate: expiryDate.toISOString(),
+                amount: amount,
+                createdAt: new Date().toISOString(),
+                duration: duration
+            };
+            localStorage.setItem('valid_licenses', JSON.stringify(licenses));
+            
+            // إضافة الصيدلية
+            const newId = clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1;
+            clients.push({
+                id: newId,
+                name: pharmacyName,
+                licenseKey: licenseKey,
+                startDate: startDate.toISOString(),
+                endDate: expiryDate.toISOString(),
+                amount: amount,
+                duration: duration,
+                owner: '',
+                phone: '',
+                email: ''
+            });
+            localStorage.setItem('developer_clients', JSON.stringify(clients));
+            
+            alert(`✅ تم إنشاء الترخيص بنجاح\n\n🔑 مفتاح الترخيص: ${licenseKey}\n🏥 الصيدلية: ${pharmacyName}\n📅 صالح حتى: ${expiryDate.toLocaleDateString('ar-SA')}`);
+            
+            closeModal('licenseModal');
+            loadData();
+        }
+        
+        // تعديل صيدلية
+        function editClient(id) {
+            const client = clients.find(c => c.id === id);
+            if (!client) return;
+            
+            document.getElementById('modalTitle').innerHTML = 'تعديل بيانات الصيدلية';
+            document.getElementById('clientId').value = client.id;
+            document.getElementById('pharmacyName').value = client.name;
+            document.getElementById('ownerName').value = client.owner || '';
+            document.getElementById('phone').value = client.phone || '';
+            document.getElementById('email').value = client.email || '';
+            document.getElementById('duration').value = client.duration || '12';
+            document.getElementById('amount').value = client.amount || '';
+            document.getElementById('clientModal').classList.add('active');
+        }
+        
+        // حفظ صيدلية
+        function saveClient() {
+            const id = document.getElementById('clientId').value;
+            const name = document.getElementById('pharmacyName').value;
+            if (!name) { alert('يرجى إدخال اسم الصيدلية'); return; }
+            
+            const duration = parseInt(document.getElementById('duration').value);
+            const amount = parseFloat(document.getElementById('amount').value);
+            
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + duration);
+            
+            // توليد مفتاح ترخيص إذا لم يكن موجود
+            let licenseKey = '';
+            if (!id) {
+                licenseKey = 'LIC-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + 
+                              Math.random().toString(36).substring(2, 6).toUpperCase() + '-' +
+                              Math.random().toString(36).substring(2, 6).toUpperCase();
+                
+                // إضافة للتراخيص
+                licenses[licenseKey] = {
+                    pharmacyName: name,
+                    expiryDate: endDate.toISOString(),
+                    amount: amount,
+                    createdAt: new Date().toISOString(),
+                    duration: duration
+                };
+                localStorage.setItem('valid_licenses', JSON.stringify(licenses));
+            } else {
+                const existingClient = clients.find(c => c.id == id);
+                licenseKey = existingClient.licenseKey;
+                if (licenseKey && licenses[licenseKey]) {
+                    licenses[licenseKey].pharmacyName = name;
+                    licenses[licenseKey].expiryDate = endDate.toISOString();
+                    licenses[licenseKey].amount = amount;
+                    localStorage.setItem('valid_licenses', JSON.stringify(licenses));
+                }
+            }
+            
+            const clientData = {
+                id: id ? parseInt(id) : Date.now(),
+                name: name,
+                owner: document.getElementById('ownerName').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                licenseKey: licenseKey,
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                amount: amount,
+                duration: duration
+            };
+            
+            if (id) {
+                const index = clients.findIndex(c => c.id == id);
+                if (index !== -1) clients[index] = clientData;
+            } else {
+                clients.push(clientData);
+            }
+            
+            localStorage.setItem('developer_clients', JSON.stringify(clients));
+            closeModal('clientModal');
+            loadData();
+        }
+        
+        // تعديل ترخيص
+        function editLicense(key) {
+            const license = licenses[key];
+            if (!license) return;
+            
+            const newExpiry = prompt('تاريخ الانتهاء الجديد (YYYY-MM-DD):', new Date(license.expiryDate).toISOString().split('T')[0]);
+            if (!newExpiry) return;
+            
+            const newAmount = prompt('المبلغ الجديد (ج.س):', license.amount);
+            if (!newAmount) return;
+            
+            license.expiryDate = new Date(newExpiry).toISOString();
+            license.amount = parseFloat(newAmount);
+            localStorage.setItem('valid_licenses', JSON.stringify(licenses));
+            
+            // تحديث الصيدلية المرتبطة
+            const relatedClient = clients.find(c => c.licenseKey === key);
+            if (relatedClient) {
+                relatedClient.endDate = license.expiryDate;
+                relatedClient.amount = license.amount;
+                localStorage.setItem('developer_clients', JSON.stringify(clients));
+            }
+            
+            alert('✅ تم تعديل الترخيص بنجاح');
+            loadData();
+        }
+        
+        // حذف ترخيص
+        function deleteLicense(key) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا الترخيص؟')) return;
+            delete licenses[key];
+            localStorage.setItem('valid_licenses', JSON.stringify(licenses));
+            
+            // حذف الصيدلية المرتبطة
+            const relatedIndex = clients.findIndex(c => c.licenseKey === key);
+            if (relatedIndex !== -1) {
+                clients.splice(relatedIndex, 1);
+                localStorage.setItem('developer_clients', JSON.stringify(clients));
+            }
+            
+            alert('🗑️ تم حذف الترخيص');
+            loadData();
+        }
+        
+        // حذف صيدلية
+        function deleteClient(id) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الصيدلية؟')) return;
+            const client = clients.find(c => c.id === id);
+            if (client && client.licenseKey && licenses[client.licenseKey]) {
+                delete licenses[client.licenseKey];
+                localStorage.setItem('valid_licenses', JSON.stringify(licenses));
+            }
+            clients = clients.filter(c => c.id !== id);
+            localStorage.setItem('developer_clients', JSON.stringify(clients));
+            loadData();
+        }
+        
+        // حفظ الإعدادات
+        function saveSettings() {
+            const settings = {
+                whatsapp: document.getElementById('whatsapp-number').value,
+                email: document.getElementById('developer-email').value,
+                demoUrl: document.getElementById('demo-url').value
+            };
+            localStorage.setItem('developer_settings', JSON.stringify(settings));
+            alert('✅ تم حفظ الإعدادات بنجاح');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+        
+        function showPage(page) {
+            document.getElementById('dashboard-page').style.display = 'none';
+            document.getElementById('clients-page').style.display = 'none';
+            document.getElementById('licenses-page').style.display = 'none';
+            document.getElementById('subscriptions-page').style.display = 'none';
+            document.getElementById('sales-page').style.display = 'none';
+            document.getElementById('settings-page').style.display = 'none';
+            document.getElementById(page + '-page').style.display = 'block';
+            
+            if (page === 'licenses') displayLicenses();
+            if (page === 'clients') displayClients();
+            if (page === 'subscriptions') displaySubscriptions();
+            if (page === 'sales') displayPayments();
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
+
