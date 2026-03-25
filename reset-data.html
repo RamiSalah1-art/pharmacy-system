@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<script>
+    // مسح جميع البيانات
+    localStorage.clear();
+    
+    // إعادة تهيئة البيانات الفارغة
+    localStorage.setItem('products', JSON.stringify([]));
+    localStorage.setItem('customers', JSON.stringify([]));
+    localStorage.setItem('invoices', JSON.stringify([]));
+    localStorage.setItem('pharmacySettings', JSON.stringify({
+        pharmacyName: "",
+        pharmacyNameEn: "",
+        address: "",
+        phone: "",
+        email: "",
+        license: "",
+        currencySymbol: "ج.س",
+        profitMargin: 30,
+        taxRate: 0,
+        footerNote: "شكراً لثقتكم بنا"
+    }));
+    localStorage.setItem('storage_mode', 'local');
+    
+    console.log("✅ تم مسح جميع البيانات التجريبية");
+    alert("✅ تم مسح جميع البيانات التجريبية\n\nالآن النظام فارغ تماماً");
+    
+    window.location.href = "dashboard.html";
+</script>
+<body>
+    <h3>جاري مسح البيانات...</h3>
+</body>
+</html>
