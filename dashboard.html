@@ -130,9 +130,55 @@
                 grid-template-columns: 1fr;
             }
         }
-    </style>
+            /* تنسيق الهاتف */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: -280px;
+                width: 280px;
+                height: 100%;
+                transition: right 0.3s ease;
+                z-index: 1000;
+            }
+            .sidebar.active {
+                right: 0;
+            }
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+            }
+            .menu-toggle {
+                display: block;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.active {
+                display: block;
+            }
+        }
+        @media (min-width: 769px) {
+            .menu-toggle {
+                display: none;
+            }
+            .overlay {
+                display: none;
+            }
+        }</style>
 </head>
-<body>
+<body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
@@ -417,6 +463,7 @@ function updateDashboardCurrency() {
 document.addEventListener('DOMContentLoaded', updateDashboardCurrency);
 </script></body>
 </html>
+
 
 
 

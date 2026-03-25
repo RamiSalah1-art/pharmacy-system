@@ -166,9 +166,55 @@
             .filters-bar { flex-direction: column; }
             .filters-bar input, .filters-bar select, .btn-clear { width: 100%; }
         }
-    </style>
+            /* تنسيق الهاتف */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: -280px;
+                width: 280px;
+                height: 100%;
+                transition: right 0.3s ease;
+                z-index: 1000;
+            }
+            .sidebar.active {
+                right: 0;
+            }
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+            }
+            .menu-toggle {
+                display: block;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.active {
+                display: block;
+            }
+        }
+        @media (min-width: 769px) {
+            .menu-toggle {
+                display: none;
+            }
+            .overlay {
+                display: none;
+            }
+        }</style>
 </head>
-<body>
+<body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
@@ -289,8 +335,54 @@
                     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
                     .total { margin-top: 15px; text-align: left; font-weight: bold; }
-                </style>
-                </head><body>
+                        /* تنسيق الهاتف */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: -280px;
+                width: 280px;
+                height: 100%;
+                transition: right 0.3s ease;
+                z-index: 1000;
+            }
+            .sidebar.active {
+                right: 0;
+            }
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+            }
+            .menu-toggle {
+                display: block;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.active {
+                display: block;
+            }
+        }
+        @media (min-width: 769px) {
+            .menu-toggle {
+                display: none;
+            }
+            .overlay {
+                display: none;
+            }
+        }</style>
+                </head><body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
                 <div class="header"><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p></div>
                 <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
                 <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
@@ -331,7 +423,18 @@
             displayInvoices(allInvoices);
         }
         
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+                function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
+        }
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+        }
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
         
         document.getElementById('searchInput').addEventListener('input', applyFilters);
@@ -344,3 +447,4 @@
     </script>
 </body>
 </html>
+
