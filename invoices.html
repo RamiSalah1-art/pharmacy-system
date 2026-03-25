@@ -232,10 +232,26 @@
                 display: none;
             }
         }</style>
-</head>
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100%;
+    transition: right 0.3s ease;
+    z-index: 1000;
+}
+.menu-toggle {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+</style></head>
 <body><div id="overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;" onclick="closeSidebar()"></div>
     <div class="app-container">
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar"><div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">✕</button></div>
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html"><i class="fas fa-chart-line"></i> لوحة التحكم</a>
@@ -385,7 +401,23 @@
                 display: none;
             }
         }</style>
-                </head><body><div id="overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;" onclick="closeSidebar()"></div>
+                <style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100%;
+    transition: right 0.3s ease;
+    z-index: 1000;
+}
+.menu-toggle {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+</style></head><body><div id="overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;" onclick="closeSidebar()"></div>
                 <div class="header"><h2>نظام إدارة الصيدليات</h2><p>${new Date(inv.date).toLocaleString('ar-SA')}</p></div>
                 <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
                 <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
@@ -414,7 +446,14 @@
             sidebar.classList.remove('active');
             if (overlay) overlay.style.display = 'none';
         }
-        </script></body></html>
+        </script><script>
+function toggleSidebar() {
+    document.getElementById('sidebar').style.right = '0';
+}
+function closeSidebar() {
+    document.getElementById('sidebar').style.right = '-280px';
+}
+</script></body></html>
             `);
             printWindow.document.close();
             printWindow.print();
@@ -479,6 +518,14 @@
             sidebar.classList.remove('active');
             if (overlay) overlay.style.display = 'none';
         }
-        </script></body>
+        </script><script>
+function toggleSidebar() {
+    document.getElementById('sidebar').style.right = '0';
+}
+function closeSidebar() {
+    document.getElementById('sidebar').style.right = '-280px';
+}
+</script></body>
 </html>
+
 
