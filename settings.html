@@ -1,0 +1,331 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإعدادات - نظام الصيدليات</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .settings-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .settings-card h2 {
+            font-size: 18px;
+            color: #2c7da0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2c7da0;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .btn-save {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        .btn-save:hover {
+            transform: translateY(-2px);
+        }
+        .preview-box {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        .preview-box h4 {
+            margin-bottom: 10px;
+            color: #2c7da0;
+        }
+        .preview-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .currency-example {
+            background: #fef3c7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #d97706;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-hospital-user"></i>
+                <h3 class="pharmacy-name">نظام الصيدلية</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i><span>لوحة التحكم</span></a>
+                <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i><span>المخزون</span></a>
+                <a href="pos.html" class="nav-item"><i class="fas fa-cash-register"></i><span>نقطة البيع</span></a>
+                <a href="customers.html" class="nav-item"><i class="fas fa-users"></i><span>العملاء</span></a>
+                <a href="invoices.html" class="nav-item"><i class="fas fa-file-invoice"></i><span>الفواتير</span></a>
+                <a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a>
+                <a href="settings.html" class="nav-item active"><i class="fas fa-cog"></i><span>الإعدادات</span></a>
+            </nav>
+            <div class="sidebar-footer"><button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>تسجيل الخروج</span></button></div>
+        </aside>
+        <main class="main-content">
+            <header class="top-bar">
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <div class="user-info">
+                    <span id="user-name"></span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </header>
+            <div class="content-wrapper">
+                <h1><i class="fas fa-cog"></i> إعدادات النظام</h1>
+                
+                <div class="settings-container">
+                    <!-- معلومات الصيدلية -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-store"></i> معلومات الصيدلية</h2>
+                        <div class="form-group">
+                            <label>اسم الصيدلية (عربي)</label>
+                            <input type="text" id="pharmacyName" placeholder="مثال: صيدلية السلام">
+                        </div>
+                        <div class="form-group">
+                            <label>اسم الصيدلية (إنجليزي)</label>
+                            <input type="text" id="pharmacyNameEn" placeholder="Example: Al Salam Pharmacy">
+                        </div>
+                        <div class="form-group">
+                            <label>العنوان</label>
+                            <input type="text" id="address" placeholder="العنوان الكامل للصيدلية">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>رقم الهاتف</label>
+                                <input type="tel" id="phone" placeholder="0123456789">
+                            </div>
+                            <div class="form-group">
+                                <label>البريد الإلكتروني</label>
+                                <input type="email" id="email" placeholder="info@pharmacy.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>السجل التجاري / الترخيص</label>
+                            <input type="text" id="license" placeholder="رقم الترخيص">
+                        </div>
+                    </div>
+                    
+                    <!-- إعدادات العملة والمالية -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-money-bill-wave"></i> إعدادات العملة والمالية</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>رمز العملة</label>
+                                <input type="text" id="currencySymbol" value="ج.س" placeholder="مثال: ج.س">
+                            </div>
+                            <div class="form-group">
+                                <label>نسبة الربح (%)</label>
+                                <input type="number" id="profitMargin" step="1" placeholder="30">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>نسبة الضريبة (%)</label>
+                            <input type="number" id="taxRate" step="0.1" placeholder="0">
+                        </div>
+                        <div class="currency-example">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>مثال:</strong> سعر الشراء 100 ج.س + ربح 30% = سعر البيع 130 ج.س
+                        </div>
+                    </div>
+                    
+                    <!-- تذييل الفاتورة -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-file-invoice"></i> تذييل الفاتورة</h2>
+                        <div class="form-group">
+                            <label>رسالة تذييل الفاتورة</label>
+                            <textarea id="footerNote" rows="3" placeholder="شكراً لثقتكم بنا..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- معاينة -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-eye"></i> معاينة</h2>
+                        <div class="preview-box">
+                            <h4>اسم الصيدلية في الهيدر:</h4>
+                            <div style="background: #2c7da0; color: white; padding: 10px; border-radius: 8px; text-align: center;">
+                                <span id="previewName">صيدلية السلام</span>
+                            </div>
+                        </div>
+                        <div class="preview-box">
+                            <h4>مثال على تنسيق العملة:</h4>
+                            <div class="preview-item">
+                                <span>سعر المنتج:</span>
+                                <strong id="previewCurrency">100 ج.س</strong>
+                            </div>
+                            <div class="preview-item">
+                                <span>إجمالي الفاتورة:</span>
+                                <strong id="previewTotal">1,250 ج.س</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-save" onclick="saveSettings()">
+                        <i class="fas fa-save"></i> حفظ الإعدادات
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="js/app.js"></script>
+    <script>
+        let settings = {};
+        
+        // تحميل الإعدادات
+        function loadSettings() {
+            const stored = localStorage.getItem('pharmacySettings');
+            if (stored) {
+                settings = JSON.parse(stored);
+            } else {
+                settings = {
+                    pharmacyName: "صيدلية السلام",
+                    pharmacyNameEn: "Al Salam Pharmacy",
+                    address: "الخرطوم - السودان",
+                    phone: "0123456789",
+                    email: "info@alsalam.com",
+                    license: "123456789",
+                    currencySymbol: "ج.س",
+                    profitMargin: 30,
+                    taxRate: 0,
+                    footerNote: "شكراً لثقتكم بنا - نتمنى لكم دوام الصحة والعافية"
+                };
+            }
+            
+            // تعبئة الحقول
+            document.getElementById('pharmacyName').value = settings.pharmacyName || '';
+            document.getElementById('pharmacyNameEn').value = settings.pharmacyNameEn || '';
+            document.getElementById('address').value = settings.address || '';
+            document.getElementById('phone').value = settings.phone || '';
+            document.getElementById('email').value = settings.email || '';
+            document.getElementById('license').value = settings.license || '';
+            document.getElementById('currencySymbol').value = settings.currencySymbol || 'ج.س';
+            document.getElementById('profitMargin').value = settings.profitMargin || 30;
+            document.getElementById('taxRate').value = settings.taxRate || 0;
+            document.getElementById('footerNote').value = settings.footerNote || '';
+            
+            updatePreview();
+        }
+        
+        // تحديث المعاينة
+        function updatePreview() {
+            const name = document.getElementById('pharmacyName').value || 'صيدلية السلام';
+            const currency = document.getElementById('currencySymbol').value || 'ج.س';
+            
+            document.getElementById('previewName').innerHTML = name;
+            document.getElementById('previewCurrency').innerHTML = `100 ${currency}`;
+            document.getElementById('previewTotal').innerHTML = `1,250 ${currency}`;
+        }
+        
+        // حفظ الإعدادات
+        function saveSettings() {
+            const newSettings = {
+                pharmacyName: document.getElementById('pharmacyName').value,
+                pharmacyNameEn: document.getElementById('pharmacyNameEn').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                license: document.getElementById('license').value,
+                currencySymbol: document.getElementById('currencySymbol').value,
+                profitMargin: parseFloat(document.getElementById('profitMargin').value) || 30,
+                taxRate: parseFloat(document.getElementById('taxRate').value) || 0,
+                footerNote: document.getElementById('footerNote').value,
+                currency: document.getElementById('currencySymbol').value
+            };
+            
+            localStorage.setItem('pharmacySettings', JSON.stringify(newSettings));
+            
+            // تحديث اسم الصيدلية في الصفحة الحالية
+            document.querySelectorAll('.pharmacy-name').forEach(el => {
+                if (el) el.innerHTML = newSettings.pharmacyName;
+            });
+            
+            // تحديث عنوان الصفحة
+            document.title = `${newSettings.pharmacyName} - الإعدادات`;
+            
+            showNotification('✅ تم حفظ الإعدادات بنجاح', 'success');
+            
+            // تحديث المعاينة
+            updatePreview();
+            
+            // تحديث الصفحات الأخرى عند فتحها
+            sessionStorage.setItem('settingsUpdated', 'true');
+        }
+        
+        // إضافة مستمعين للتحديث المباشر للمعاينة
+        document.getElementById('pharmacyName').addEventListener('input', updatePreview);
+        document.getElementById('currencySymbol').addEventListener('input', updatePreview);
+        
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!sessionStorage.getItem('loggedIn')) {
+                window.location.href = 'index.html';
+            }
+            document.getElementById('user-name').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
+            loadSettings();
+        });
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+    </script>
+</body>
+</html>
+
+

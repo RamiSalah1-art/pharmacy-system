@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<script>
+    // التأكد من وجود فواتير
+    let invoices = localStorage.getItem('invoices');
+    
+    if (!invoices || invoices === '[]' || invoices === 'null') {
+        const testInvoices = [
+            {
+                id: 1,
+                number: "INV-001",
+                customerName: "أحمد محمد",
+                items: [
+                    { name: "باراسيتامول 500mg", quantity: 2, price: 5.50, total: 11.00 },
+                    { name: "فيتامين C", quantity: 1, price: 15.00, total: 15.00 }
+                ],
+                total: 26.00,
+                paymentMethod: "نقدي",
+                date: new Date().toISOString(),
+                notes: "شكراً لتعاملكم"
+            },
+            {
+                id: 2,
+                number: "INV-002",
+                customerName: "سارة علي",
+                items: [
+                    { name: "إيبوبروفين 400mg", quantity: 1, price: 8.00, total: 8.00 },
+                    { name: "أموكسيسيلين 500mg", quantity: 2, price: 12.00, total: 24.00 }
+                ],
+                total: 32.00,
+                paymentMethod: "تحويل بنكي",
+                date: new Date(Date.now() - 86400000).toISOString(),
+                notes: ""
+            },
+            {
+                id: 3,
+                number: "INV-003",
+                customerName: "نقدي",
+                items: [
+                    { name: "أسبرين 100mg", quantity: 3, price: 4.50, total: 13.50 }
+                ],
+                total: 13.50,
+                paymentMethod: "نقدي",
+                date: new Date(Date.now() - 172800000).toISOString(),
+                notes: ""
+            },
+            {
+                id: 4,
+                number: "INV-004",
+                customerName: "محمد عبدالله",
+                items: [
+                    { name: "كريم حروق", quantity: 1, price: 22.00, total: 22.00 },
+                    { name: "مضاد حيوي", quantity: 2, price: 25.00, total: 50.00 }
+                ],
+                total: 72.00,
+                paymentMethod: "تحويل بنكي",
+                date: new Date(Date.now() - 259200000).toISOString(),
+                notes: "تم التحويل"
+            }
+        ];
+        localStorage.setItem('invoices', JSON.stringify(testInvoices));
+        console.log("تم إضافة 4 فواتير تجريبية");
+        alert("✅ تم إضافة 4 فواتير تجريبية للاختبار");
+    } else {
+        const count = JSON.parse(invoices).length;
+        console.log("الفواتير الموجودة:", count);
+        alert(`✅ يوجد ${count} فاتورة في النظام`);
+    }
+    
+    window.location.href = "invoices.html";
+</script>
+<body>
+    <h3>جاري التحقق من الفواتير...</h3>
+</body>
+</html>

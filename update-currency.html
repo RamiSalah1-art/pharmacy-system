@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<script>
+    // تحديث إعدادات الصيدلية
+    let settings = localStorage.getItem('pharmacySettings');
+    if (settings) {
+        let settingsObj = JSON.parse(settings);
+        settingsObj.currencySymbol = 'ج.س';
+        settingsObj.currency = 'ج.س';
+        localStorage.setItem('pharmacySettings', JSON.stringify(settingsObj));
+        console.log("تم تحديث العملة إلى جنيه سوداني");
+    } else {
+        const defaultSettings = {
+            pharmacyName: "صيدلية السلام",
+            pharmacyNameEn: "Al Salam Pharmacy",
+            address: "الخرطوم - السودان",
+            phone: "0123456789",
+            email: "info@alsalam.com",
+            license: "123456789",
+            currencySymbol: "ج.س",
+            currency: "ج.س",
+            profitMargin: 30,
+            taxRate: 0,
+            footerNote: "شكراً لثقتكم بنا - نتمنى لكم دوام الصحة والعافية"
+        };
+        localStorage.setItem('pharmacySettings', JSON.stringify(defaultSettings));
+        console.log("تم إنشاء إعدادات جديدة بالعملة ج.س");
+    }
+    
+    // تحديث المنتجات إذا كانت أسعارها قديمة
+    let products = localStorage.getItem('products');
+    if (products) {
+        let productsArray = JSON.parse(products);
+        // لا نغير الأسعار، فقط نعرضها بالعملة الجديدة
+        console.log("تم تحديث " + productsArray.length + " منتج");
+    }
+    
+    alert("✅ تم تحديث العملة إلى جنيه سوداني (ج.س) في جميع أنحاء النظام");
+    window.location.href = "dashboard.html";
+</script>
+<body>
+    <h3>جاري تحديث العملة...</h3>
+</body>
+</html>
