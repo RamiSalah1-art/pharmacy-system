@@ -558,7 +558,7 @@
             };
             invoices.push(newInvoice);
             localStorage.setItem('invoices', JSON.stringify(invoices));
-            alert(`✅ تم إتمام البيع\nرقم الفاتورة: ${newInvoice.number}\nالمبلغ: ${total} ج.س`);
+            if(confirm("🖨️ هل تريد طباعة الفاتورة؟")) { printInvoice(newInvoice); } alert(`✅ تم إتمام البيع\nرقم الفاتورة: ${newInvoice.number}\nالمبلغ: ${total} ج.س`);
             cart = [];
             updateCart();
             loadProducts();
@@ -643,6 +643,7 @@
 </script>
 </body>
 </html>
+
 
 
 
