@@ -496,7 +496,19 @@
             alert('✅ تم إضافة العميل بنجاح');
         }
 
-        function completeSale() {
+                function printCurrentInvoice() {
+            const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+            if (cart.length === 0) { alert("⚠️ لا توجد فواتير للطباعة"); return; }
+            const invoice = {
+                number: "INV-" + Date.now(),
+                customerName: document.getElementById('customerSelect').value === 'cash' ? 'نقدي' : 'عميل',
+                items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, total: i.price * i.quantity })),
+                total: total,
+                date: new Date().toISOString(),
+                paymentMethod: selectedPaymentMethod === 'cash' ? 'نقدي' : 'تحويل بنكي'
+            };
+            printInvoice(invoice);
+        } function completeSale() {
             const customerValue = document.getElementById('customerSelect').value;
             let customerName = 'نقدي';
             let customerId = null;
@@ -586,5 +598,6 @@
     </script>
 </body>
 </html>
+
 
 
