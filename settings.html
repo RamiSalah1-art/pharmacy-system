@@ -2,14 +2,18 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>الإعدادات - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Cairo', sans-serif;
-            background: #f5f7fa;
+            background: #f0f2f5;
             height: 100vh;
             overflow: hidden;
         }
@@ -64,13 +68,19 @@
             justify-content: space-between;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
         .content-wrapper {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
         }
         .settings-container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .settings-card {
@@ -96,16 +106,12 @@
             font-weight: 600;
             color: #2c3e50;
         }
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 10px 12px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-family: 'Cairo', sans-serif;
-        }
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #2c7da0;
         }
         .form-row {
             display: grid;
@@ -123,130 +129,49 @@
             font-weight: bold;
             width: 100%;
         }
-        .btn-save:hover {
-            background: #219653;
+        .btn-add {
+            background: #2c7da0;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
         }
-        .preview-box {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 12px;
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 15px;
-            border: 1px solid #e0e0e0;
         }
+        .users-table th, .users-table td {
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .users-table th {
+            background: #f8f9fa;
+        }
+        .badge-admin { background: #2c7da0; color: white; padding: 2px 10px; border-radius: 15px; font-size: 12px; }
+        .badge-pharmacist { background: #f39c12; color: white; padding: 2px 10px; border-radius: 15px; font-size: 12px; }
+        .badge-cashier { background: #27ae60; color: white; padding: 2px 10px; border-radius: 15px; font-size: 12px; }
         @media (max-width: 768px) {
-            .sidebar { position: fixed; transform: translateX(-100%); }
+            .sidebar { position: fixed; transform: translateX(-100%); transition: 0.3s; }
             .sidebar.active { transform: translateX(0); }
             .form-row { grid-template-columns: 1fr; }
         }
-            /* تنسيق الهاتف */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
-            }
-            .overlay.active {
-                display: block;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-            .overlay {
-                display: none;
-            }
-        }        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }</style>
+    </style>
 </head>
-<body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+<body>
     <div class="app-container">
-        <aside class="sidebar" id="sidebar"><div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">✕</button></div>
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3 id="pharmacyNameHeader">نظام الصيدلية</h3></div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html"><i class="fas fa-chart-line"></i> لوحة التحكم</a>
@@ -266,53 +191,47 @@
             </header>
             <div class="content-wrapper">
                 <div class="settings-container">
+                    <!-- معلومات الصيدلية -->
                     <div class="settings-card">
                         <h2><i class="fas fa-store"></i> معلومات الصيدلية</h2>
                         <div class="form-group">
                             <label>اسم الصيدلية</label>
-                            <input type="text" id="pharmacyName" placeholder="">
-                        </div>
-                        <div class="form-group">
-                            <label>العنوان</label>
-                            <input type="text" id="address" placeholder="">
+                            <input type="text" id="pharmacyName" placeholder="اسم الصيدلية">
                         </div>
                         <div class="form-row">
-                            <div class="form-group">
-                                <label>رقم الهاتف</label>
-                                <input type="tel" id="phone" placeholder="">
-                            </div>
-                            <div class="form-group">
-                                <label>البريد الإلكتروني</label>
-                                <input type="email" id="email" placeholder="">
-                            </div>
+                            <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="phone"></div>
+                            <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="email"></div>
                         </div>
+                        <div class="form-group"><label>العنوان</label><input type="text" id="address"></div>
                     </div>
                     
+                    <!-- إعدادات العملة -->
                     <div class="settings-card">
                         <h2><i class="fas fa-money-bill-wave"></i> إعدادات العملة</h2>
-                        <div class="form-group">
-                            <label>رمز العملة</label>
-                            <input type="text" id="currencySymbol" placeholder="">
-                        </div>
-                        <div class="form-group">
-                            <label>نسبة الربح (%)</label>
-                            <input type="number" id="profitMargin" step="1" placeholder="">
-                            <small>سعر البيع = سعر الشراء × (1 + النسبة/100)</small>
+                        <div class="form-row">
+                            <div class="form-group"><label>رمز العملة</label><input type="text" id="currencySymbol" placeholder="ج.س"></div>
+                            <div class="form-group"><label>نسبة الربح (%)</label><input type="number" id="profitMargin" step="1" placeholder="30"></div>
                         </div>
                     </div>
                     
+                    <!-- إدارة المستخدمين -->
                     <div class="settings-card">
-                        <h2><i class="fas fa-cloud-upload-alt"></i> التخزين السحابي</h2>
-                        <div class="form-group">
-                            <label>وضع التخزين</label>
-                            <select id="storageMode">
-                                <option value="local">📁 تخزين محلي (على الجهاز)</option>
-                                <option value="cloud">☁️ تخزين سحابي (Firebase)</option>
+                        <h2><i class="fas fa-users"></i> إدارة المستخدمين</h2>
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" id="newUserName" placeholder="اسم المستخدم" style="flex:2; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                            <input type="email" id="newUserEmail" placeholder="البريد الإلكتروني" style="flex:2; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                            <input type="text" id="newUserPassword" placeholder="كلمة المرور" value="123456" style="flex:1; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                            <select id="newUserRole" style="padding: 8px; border-radius: 8px;">
+                                <option value="pharmacist">💊 صيدلي</option>
+                                <option value="cashier">💰 كاشير</option>
                             </select>
+                            <button class="btn-add" onclick="addUser()"><i class="fas fa-plus"></i> إضافة</button>
                         </div>
-                        <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <button id="syncToCloudBtn" style="background: #27ae60; color: white; padding: 8px 15px; border: none; border-radius: 5px;">☁️ مزامنة إلى السحابة</button>
-                            <button id="syncToLocalBtn" style="background: #3498db; color: white; padding: 8px 15px; border: none; border-radius: 5px;">📥 تحميل من السحابة</button>
+                        <div style="overflow-x: auto;">
+                            <table class="users-table">
+                                <thead><th>#</th><th>الاسم</th><th>البريد</th><th>الدور</th><th>تاريخ الإضافة</th><th></th></thead>
+                                <tbody id="usersList"></tbody>
+                            </table>
                         </div>
                     </div>
                     
@@ -323,95 +242,171 @@
     </div>
 
     <script>
-        let settings = {};
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6xbkAe6MqNc-gKg-uHU4TpEdHVb0HYaI",
+            authDomain: "pharmacy-system-cafdf.firebaseapp.com",
+            projectId: "pharmacy-system-cafdf",
+            storageBucket: "pharmacy-system-cafdf.firebasestorage.app",
+            messagingSenderId: "802316904728",
+            appId: "1:802316904728:web:84757a51b203aed94d166d"
+        };
         
-        function loadSettings() {
-            const stored = localStorage.getItem('pharmacySettings');
-            if (stored) {
-                settings = JSON.parse(stored);
-            } else {
-                settings = {
-                    pharmacyName: "صيدلية السلام",
-                    address: "الخرطوم - السودان",
-                    phone: "0123456789",
-                    email: "info@alsalam.com",
-                    currencySymbol: "ج.س",
-                    profitMargin: 30,
-                    storageMode: "local"
-                };
-                localStorage.setItem('pharmacySettings', JSON.stringify(settings));
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let currentUser = null;
+        let currentPharmacyId = null;
+        let pharmacyUsers = [];
+        
+        // تحميل بيانات المستخدم الحالي
+        async function loadCurrentUser() {
+            const user = auth.currentUser;
+            if (!user) return;
+            currentUser = user;
+            
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists) {
+                currentPharmacyId = userDoc.data().pharmacyId;
+                loadPharmacyUsers();
+            }
+            loadSettings();
+        }
+        
+        // تحميل مستخدمي الصيدلية
+        async function loadPharmacyUsers() {
+            if (!currentPharmacyId) return;
+            const snapshot = await db.collection('users').where('pharmacyId', '==', currentPharmacyId).get();
+            pharmacyUsers = [];
+            snapshot.forEach(doc => pharmacyUsers.push({ id: doc.id, ...doc.data() }));
+            displayUsers();
+        }
+        
+        // عرض المستخدمين
+        function displayUsers() {
+            const tbody = document.getElementById('usersList');
+            if (!pharmacyUsers.length) {
+                tbody.innerHTML = '发展<td colspan="6" style="text-align:center;">لا يوجد موظفين<td>发展';
+                return;
+            }
+            let html = '';
+            pharmacyUsers.forEach((u, i) => {
+                let roleClass = '', roleText = '';
+                if (u.role === 'admin') { roleClass = 'badge-admin'; roleText = 'مدير'; }
+                else if (u.role === 'pharmacist') { roleClass = 'badge-pharmacist'; roleText = 'صيدلي'; }
+                else { roleClass = 'badge-cashier'; roleText = 'كاشير'; }
+                html += `实践
+                    <td>${i+1}</td>
+                    <td>${u.displayName || u.email}</td>
+                    <td>${u.email}</td>
+                    <td><span class="${roleClass}">${roleText}</span></td>
+                    <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('ar-SA') : '-'}</td>
+                    <td>${u.role !== 'admin' ? `<button class="btn-delete" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>` : ''}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        // إضافة مستخدم جديد
+        async function addUser() {
+            const name = document.getElementById('newUserName').value;
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+            const role = document.getElementById('newUserRole').value;
+            
+            if (!email || !password) {
+                alert('⚠️ يرجى إدخال البريد وكلمة المرور');
+                return;
             }
             
+            try {
+                // التحقق من عدد المستخدمين حسب الباقة
+                const pharmacyDoc = await db.collection('pharmacies').doc(currentPharmacyId).get();
+                const pharmacy = pharmacyDoc.data();
+                const maxUsers = pharmacy.maxUsers || 1;
+                if (pharmacyUsers.length >= maxUsers) {
+                    alert(`⚠️ لا يمكن إضافة موظفين جدد، الباقة الحالية تسمح بـ ${maxUsers} مستخدمين فقط`);
+                    return;
+                }
+                
+                const userCred = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection('users').doc(userCred.user.uid).set({
+                    uid: userCred.user.uid,
+                    email: email,
+                    displayName: name || email.split('@')[0],
+                    role: role,
+                    pharmacyId: currentPharmacyId,
+                    pharmacyName: pharmacy.name,
+                    createdAt: new Date().toISOString()
+                });
+                
+                document.getElementById('newUserName').value = '';
+                document.getElementById('newUserEmail').value = '';
+                document.getElementById('newUserPassword').value = '123456';
+                alert('✅ تم إضافة المستخدم بنجاح');
+                loadPharmacyUsers();
+            } catch(error) {
+                alert('❌ خطأ: ' + error.message);
+            }
+        }
+        
+        // حذف مستخدم
+        async function deleteUser(id) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا المستخدم؟')) return;
+            try {
+                await db.collection('users').doc(id).delete();
+                alert('✅ تم حذف المستخدم');
+                loadPharmacyUsers();
+            } catch(error) {
+                alert('❌ خطأ: ' + error.message);
+            }
+        }
+        
+        // تحميل الإعدادات
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
             document.getElementById('pharmacyName').value = settings.pharmacyName || '';
-            document.getElementById('address').value = settings.address || '';
             document.getElementById('phone').value = settings.phone || '';
             document.getElementById('email').value = settings.email || '';
+            document.getElementById('address').value = settings.address || '';
             document.getElementById('currencySymbol').value = settings.currencySymbol || 'ج.س';
             document.getElementById('profitMargin').value = settings.profitMargin || 30;
-            document.getElementById('storageMode').value = settings.storageMode || 'local';
-            
             document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName || 'نظام الصيدلية';
         }
         
+        // حفظ الإعدادات
         function saveSettings() {
             const newSettings = {
                 pharmacyName: document.getElementById('pharmacyName').value,
-                address: document.getElementById('address').value,
                 phone: document.getElementById('phone').value,
                 email: document.getElementById('email').value,
+                address: document.getElementById('address').value,
                 currencySymbol: document.getElementById('currencySymbol').value,
-                profitMargin: parseFloat(document.getElementById('profitMargin').value) || 30,
-                storageMode: document.getElementById('storageMode').value
+                profitMargin: parseFloat(document.getElementById('profitMargin').value) || 30
             };
-            
             localStorage.setItem('pharmacySettings', JSON.stringify(newSettings));
-            
             document.getElementById('pharmacyNameHeader').innerHTML = newSettings.pharmacyName || 'نظام الصيدلية';
-            
-            alert('✅ تم حفظ الإعدادات بنجاح');
-            
-            // تحديث العملة في كل الصفحات
-            const currency = newSettings.currencySymbol;
-            document.querySelectorAll('.currency-display').forEach(el => el.innerHTML = currency);
+            alert('✅ تم حفظ الإعدادات');
         }
         
-        function syncToCloud() {
-            alert('☁️ جاري المزامنة إلى السحابة...\n(يتطلب إعداد Firebase أولاً)');
-        }
-        
-        function syncToLocal() {
-            alert('📥 جاري تحميل البيانات من السحابة...\n(يتطلب إعداد Firebase أولاً)');
-        }
-        
-                function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('active');
-            if (overlay) overlay.classList.toggle('active');
-        }
-        function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); } {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.remove('active');
-            if (overlay) overlay.classList.remove('active');
-        }
-        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function logout() { auth.signOut(); sessionStorage.clear(); window.location.href = 'index.html'; }
         
         document.getElementById('saveBtn').onclick = saveSettings;
-        document.getElementById('syncToCloudBtn').onclick = syncToCloud;
-        document.getElementById('syncToLocalBtn').onclick = syncToLocal;
-        
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
-        if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
-        loadSettings();
+        
+        // التحقق من تسجيل الدخول
+        auth.onAuthStateChanged((user) => {
+            if (!user && !window.location.pathname.includes('index.html')) {
+                window.location.href = 'index.html';
+            } else if (user) {
+                loadCurrentUser();
+            }
+        });
+        
+        if (!sessionStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
