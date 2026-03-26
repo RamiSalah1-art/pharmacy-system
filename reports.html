@@ -412,7 +412,7 @@
             });
             const sorted = Object.entries(sales).sort((a,b) => b[1].total - a[1].total).slice(0,5);
             let html = '';
-            sorted.forEach(([name, data]) => { html += `实践<td>${name}</td><td>${data.qty}</td><td>${data.total.toFixed(2)} ج.س</td> </tr>`; });
+            sorted.forEach(([name, data]) => { html += `<td>${name}</td><td>${data.qty}</td><td>${data.total.toFixed(2)} ج.س</td> </tr>`; });
             document.getElementById('topProducts').innerHTML = html || '<tr><td colspan="3">لا توجد بيانات</td></tr>';
         }
         
@@ -427,7 +427,7 @@
             });
             const sorted = Object.entries(data).sort((a,b) => b[1].total - a[1].total).slice(0,5);
             let html = '';
-            sorted.forEach(([name, d]) => { html += `实践<td>${name}</td><td>${d.count}</td><td>${d.total.toFixed(2)} ج.س</td> </tr>`; });
+            sorted.forEach(([name, d]) => { html += `<td>${name}</td><td>${d.count}</td><td>${d.total.toFixed(2)} ج.س</td> </tr>`; });
             document.getElementById('topCustomers').innerHTML = html || '<tr><td colspan="3">لا توجد بيانات</td></tr>';
         }
         
@@ -466,3 +466,4 @@
     </script>
 </body>
 </html>
+
