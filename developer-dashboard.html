@@ -35,10 +35,7 @@
             gap: 12px;
             cursor: pointer;
         }
-        .sidebar-nav a:hover, .sidebar-nav a.active {
-            background: rgba(255,255,255,0.1);
-            color: #f39c12;
-        }
+        .sidebar-nav a:hover { background: rgba(255,255,255,0.1); color: #f39c12; }
         .main-content {
             flex: 1;
             display: flex;
@@ -118,7 +115,7 @@
             border-radius: 15px;
             width: 90%;
             max-width: 500px;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
         }
         .modal-header {
@@ -150,11 +147,7 @@
 <body>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <i class="fas fa-code"></i>
-                <h3>لوحة تحكم المطور</h3>
-                <small>Rami Salah</small>
-            </div>
+            <div class="sidebar-header"><i class="fas fa-code"></i><h3>لوحة تحكم المطور</h3><small>Rami Salah</small></div>
             <nav class="sidebar-nav">
                 <a onclick="showPage('dashboard')"><i class="fas fa-chart-line"></i> الرئيسية</a>
                 <a onclick="showPage('pharmacies')"><i class="fas fa-store"></i> الصيدليات</a>
@@ -169,7 +162,8 @@
                 <button class="menu-toggle" onclick="toggleSidebar()" style="background:none;border:none;font-size:20px;">☰</button>
                 <div><i class="fas fa-user-circle"></i> Rami Salah</div>
             </header>
-            <div class="content-wrapper" style="height: 100%; overflow-y: auto;">
+            <div class="content-wrapper">
+                <!-- صفحة الرئيسية -->
                 <div id="dashboard-page">
                     <div class="stats-grid">
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-store"></i></div><div><h3>إجمالي الصيدليات</h3><p class="stat-value" id="total-pharmacies">0</p></div></div>
@@ -180,23 +174,35 @@
                     <div class="table-container"><h3>📋 آخر الصيدليات المسجلة</h3><table class="data-table"><thead><th>اسم الصيدلية</th><th>البريد</th><th>الباقة</th><th>تاريخ الانتهاء</th><th>الحالة</th></thead><tbody id="recent-pharmacies"></tbody>}</div>
                 </div>
                 
-                <div id="pharmacies-page" style="display:block;">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:20px;"><h2>🏥 الصيدليات</h2><button class="btn btn-add" onclick="openPharmacyModal()"><i class="fas fa-plus"></i> إضافة صيدلية</button></div>
-                    <div class="table-container"><table class="data-table"><thead><th>#</th><th>اسم الصيدلية</th><th>البريد الإلكتروني</th><th>الباقة</th><th>تاريخ الانتهاء</th><th>الحالة</th><th>الإجراءات</th></thead><tbody id="pharmacies-list"></tbody>}</div>
+                <!-- صفحة الصيدليات -->
+                <div id="pharmacies-page" style="display:none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><i class="fas fa-store"></i> الصيدليات</h2>
+                        <button class="btn btn-add" onclick="openPharmacyModal()"><i class="fas fa-plus"></i> إضافة صيدلية</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead><tr><th>#</th><th>اسم الصيدلية</th><th>البريد الإلكتروني</th><th>الباقة</th><th>تاريخ الانتهاء</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+                            <tbody id="pharmacies-list"><tr><td colspan="7" style="text-align:center;">لا توجد صيدليات</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
                 
+                <!-- صفحة المستخدمين -->
                 <div id="users-page" style="display:none;">
-                    <h2>👥 المستخدمين</h2>
+                    <h2><i class="fas fa-users"></i> المستخدمين</h2>
                     <div class="table-container"><table class="data-table"><thead><th>#</th><th>الاسم</th><th>البريد</th><th>الدور</th><th>الصيدلية</th><th>الحالة</th><th>الإجراءات</th></thead><tbody id="users-list"></tbody>}</div>
                 </div>
                 
+                <!-- صفحة الاشتراكات -->
                 <div id="subscriptions-page" style="display:none;">
-                    <h2>📅 الاشتراكات</h2>
+                    <h2><i class="fas fa-calendar-alt"></i> الاشتراكات</h2>
                     <div class="table-container"><table class="data-table"><thead><th>الصيدلية</th><th>الباقة</th><th>تاريخ البدء</th><th>تاريخ الانتهاء</th><th>المبلغ</th><th>الحالة</th></thead><tbody id="subscriptions-list"></tbody>}</div>
                 </div>
                 
+                <!-- صفحة الإعدادات -->
                 <div id="settings-page" style="display:none;">
-                    <h2>⚙️ إعدادات المطور</h2>
+                    <h2><i class="fas fa-cog"></i> إعدادات المطور</h2>
                     <div class="table-container" style="padding:20px;">
                         <div class="form-group"><label>رقم واتساب</label><input type="text" id="whatsapp-number" value="0919000011"></div>
                         <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="developer-email" value="ramiseryani1995@gmail.com"></div>
@@ -207,31 +213,19 @@
         </main>
     </div>
     
+    <!-- مودال إضافة صيدلية -->
     <div id="pharmacyModal" class="modal">
-        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header"><h3>➕ إضافة صيدلية جديدة</h3><button onclick="closeModal()">&times;</button></div>
+        <div class="modal-content">
+            <div class="modal-header"><h3>➕ إضافة صيدلية جديدة</h3><button onclick="closeModal()" style="background:none;border:none;color:white;font-size:24px;">&times;</button></div>
             <div class="modal-body">
                 <div class="form-group"><label>🏥 اسم الصيدلية *</label><input type="text" id="pharmacyName" placeholder="مثال: صيدلية السلام"></div>
                 <div class="form-group"><label>📧 البريد الإلكتروني للمدير *</label><input type="email" id="adminEmail" placeholder="admin@pharmacy.com"></div>
-                <div class="form-group"><label>🔑 كلمة المرور *</label><input type="text" id="adminPassword" placeholder="أدخل كلمة المرور" value="pharmacy123"></div>
-                <div class="form-group"><label>💎 الباقة</label>
-                    <select id="package">
-                        <option value="basic">📁 أساسية (500,000 ج.س - مستخدم واحد - تخزين محلي)</option>
-                        <option value="professional">☁️ احترافية (1,200,000 ج.س - 3 مستخدمين - تخزين سحابي)</option>
-                        <option value="enterprise">🏢 مؤسسية (2,500,000 ج.س - غير محدود - تخزين سحابي مخصص)</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>📅 مدة الاشتراك</label>
-                    <select id="duration">
-                        <option value="12">12 شهر (سنة)</option>
-                        <option value="6">6 أشهر</option>
-                        <option value="3">3 أشهر</option>
-                        <option value="1">شهر واحد</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>💰 المبلغ المدفوع (ج.س)</label><input type="number" id="amount" placeholder="يتم حسابه تلقائياً حسب الباقة والمدة"></div>
+                <div class="form-group"><label>🔑 كلمة المرور *</label><input type="text" id="adminPassword" value="pharmacy123"></div>
+                <div class="form-group"><label>💎 الباقة</label><select id="package"><option value="basic">📁 أساسية (500,000 ج.س)</option><option value="professional">☁️ احترافية (1,200,000 ج.س)</option><option value="enterprise">🏢 مؤسسية (2,500,000 ج.س)</option></select></div>
+                <div class="form-group"><label>📅 مدة الاشتراك</label><select id="duration"><option value="12">12 شهر (سنة)</option><option value="6">6 أشهر</option><option value="3">3 أشهر</option><option value="1">شهر واحد</option></select></div>
+                <div class="form-group"><label>💰 المبلغ المدفوع (ج.س)</label><input type="number" id="amount" placeholder="يتم حسابه تلقائياً"></div>
             </div>
-            <div class="modal-footer"><button onclick="closeModal()">إلغاء</button><button onclick="savePharmacy()" style="background:#27ae60;color:white;">💾 حفظ وإنشاء حساب</button></div>
+            <div class="modal-footer"><button onclick="closeModal()">إلغاء</button><button onclick="savePharmacy()" style="background:#27ae60;color:white;">حفظ وإنشاء حساب</button></div>
         </div>
     </div>
     
@@ -258,24 +252,22 @@
             updateStats();
             displayPharmacies();
             displayRecentPharmacies();
-            displayUsers();
-            displaySubscriptions();
         }
         
         function updateStats() {
             const active = pharmacies.filter(p => new Date(p.endDate) > new Date()).length;
             document.getElementById('total-pharmacies').innerHTML = pharmacies.length;
             document.getElementById('active-subscriptions').innerHTML = active;
-            document.getElementById('total-users').innerHTML = pharmacies.reduce((s,p) => s + (p.maxUsers || 1), 0);
             document.getElementById('total-revenue').innerHTML = pharmacies.reduce((s,p) => s + (p.amount || 0), 0).toLocaleString() + ' ج.س';
         }
         
         function displayPharmacies() {
             const tbody = document.getElementById('pharmacies-list');
+            if (!pharmacies.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد صيدليات</td></tr>'; return; }
             let html = '';
             pharmacies.forEach((p, i) => {
                 const isActive = new Date(p.endDate) > new Date();
-                html += `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.adminEmail}</td><td>${p.package === 'basic' ? 'أساسية' : p.package === 'professional' ? 'احترافية' : 'مؤسسية'}</td><td>${new Date(p.endDate).toLocaleDateString('ar-SA')}</td><td><span class="${isActive ? 'status-active' : 'status-expired'}">${isActive ? 'نشط' : 'منتهي'}</span></td><td><button class="btn btn-edit" onclick="editPharmacy('${p.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-delete" onclick="deletePharmacy('${p.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                html += `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.adminEmail}</td><td>${p.package === 'basic' ? 'أساسية' : p.package === 'professional' ? 'احترافية' : 'مؤسسية'}</td><td>${new Date(p.endDate).toLocaleDateString('ar-SA')}</td><td><span class="${isActive ? 'status-active' : 'status-expired'}">${isActive ? 'نشط' : 'منتهي'}</span></td><td><button class="btn btn-delete" onclick="deletePharmacy('${p.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
             });
             tbody.innerHTML = html;
         }
@@ -283,19 +275,6 @@
         function displayRecentPharmacies() {
             const tbody = document.getElementById('recent-pharmacies');
             tbody.innerHTML = pharmacies.slice(0,5).map(p => `<tr><td>${p.name}</td><td>${p.adminEmail}</td><td>${p.package === 'basic' ? 'أساسية' : p.package === 'professional' ? 'احترافية' : 'مؤسسية'}</td><td>${new Date(p.endDate).toLocaleDateString('ar-SA')}</td><td><span class="${new Date(p.endDate) > new Date() ? 'status-active' : 'status-expired'}">${new Date(p.endDate) > new Date() ? 'نشط' : 'منتهي'}</span></td></tr>`).join('');
-        }
-        
-        async function displayUsers() {
-            const usersSnapshot = await db.collection('users').get();
-            const users = [];
-            usersSnapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
-            const tbody = document.getElementById('users-list');
-            tbody.innerHTML = users.map((u, i) => `<tr><td>${i+1}</td><td>${u.displayName || u.email}</td><td>${u.email}</td><td>${u.role || 'مدير'}</td><td>${u.pharmacyName || '-'}</td><td><span class="status-active">نشط</span></td><td><button class="btn btn-delete" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-        }
-        
-        function displaySubscriptions() {
-            const tbody = document.getElementById('subscriptions-list');
-            tbody.innerHTML = pharmacies.map(p => `<tr><td>${p.name}</td><td>${p.package === 'basic' ? 'أساسية' : p.package === 'professional' ? 'احترافية' : 'مؤسسية'}</td><td>${new Date(p.startDate).toLocaleDateString('ar-SA')}</td><td>${new Date(p.endDate).toLocaleDateString('ar-SA')}</td><td>${(p.amount || 0).toLocaleString()} ج.س</td><td><span class="${new Date(p.endDate) > new Date() ? 'status-active' : 'status-expired'}">${new Date(p.endDate) > new Date() ? 'نشط' : 'منتهي'}</span></td></tr>`).join('');
         }
         
         async function savePharmacy() {
@@ -316,48 +295,28 @@
             const endDate = new Date();
             endDate.setMonth(endDate.getMonth() + duration);
             
-            if(!name || !email || !password){
-                alert('⚠️ يرجى ملء جميع الحقول المطلوبة');
-                return;
-            }
+            if(!name || !email || !password){ alert('⚠️ يرجى ملء جميع الحقول'); return; }
             
             try {
                 const userCred = await auth.createUserWithEmailAndPassword(email, password);
-                
                 await db.collection('pharmacies').doc(userCred.user.uid).set({
-                    id: userCred.user.uid,
-                    name: name,
-                    adminEmail: email,
-                    package: packageType,
+                    id: userCred.user.uid, name: name, adminEmail: email, package: packageType,
                     maxUsers: packageType === 'basic' ? 1 : packageType === 'professional' ? 3 : 999,
-                    startDate: startDate.toISOString(),
-                    endDate: endDate.toISOString(),
-                    amount: amount,
-                    storageType: packageType === 'basic' ? 'local' : 'cloud',
-                    createdAt: new Date().toISOString()
+                    startDate: startDate.toISOString(), endDate: endDate.toISOString(), amount: amount,
+                    storageType: packageType === 'basic' ? 'local' : 'cloud', createdAt: new Date().toISOString()
                 });
-                
                 await db.collection('users').doc(userCred.user.uid).set({
-                    uid: userCred.user.uid,
-                    email: email,
-                    displayName: 'مدير النظام',
-                    role: 'admin',
-                    pharmacyId: userCred.user.uid,
-                    pharmacyName: name,
-                    createdAt: new Date().toISOString()
+                    uid: userCred.user.uid, email: email, displayName: 'مدير النظام', role: 'admin',
+                    pharmacyId: userCred.user.uid, pharmacyName: name, createdAt: new Date().toISOString()
                 });
-                
-                alert(`✅ تم إنشاء الصيدلية بنجاح\n\n🏥 الصيدلية: ${name}\n📧 البريد: ${email}\n🔑 كلمة المرور: ${password}\n💎 الباقة: ${packageType === 'basic' ? 'أساسية' : packageType === 'professional' ? 'احترافية' : 'مؤسسية'}\n📅 صالح حتى: ${endDate.toLocaleDateString('ar-SA')}\n💰 المبلغ: ${amount.toLocaleString()} ج.س`);
-                
+                alert(`✅ تم إنشاء الصيدلية بنجاح\n\nالبريد: ${email}\nكلمة المرور: ${password}`);
                 closeModal();
                 loadData();
-            } catch(error) {
-                alert('❌ خطأ: ' + error.message);
-            }
+            } catch(error) { alert('❌ خطأ: ' + error.message); }
         }
         
         async function deletePharmacy(id) {
-            if(!confirm('⚠️ هل أنت متأكد من حذف هذه الصيدلية؟ سيتم حذف جميع بياناتها')) return;
+            if(!confirm('⚠️ هل أنت متأكد؟')) return;
             await db.collection('pharmacies').doc(id).delete();
             loadData();
         }
@@ -365,7 +324,7 @@
         function openPharmacyModal() {
             document.getElementById('pharmacyName').value = '';
             document.getElementById('adminEmail').value = '';
-            document.getElementById('adminPassword').value = '';
+            document.getElementById('adminPassword').value = 'pharmacy123';
             document.getElementById('package').value = 'basic';
             document.getElementById('duration').value = '12';
             document.getElementById('amount').value = '';
@@ -374,27 +333,23 @@
         
         function closeModal() { document.getElementById('pharmacyModal').classList.remove('active'); }
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        
         function showPage(page) {
-            document.querySelectorAll('[id$="-page"]').forEach(el => el.style.display = 'none');
+            document.getElementById('dashboard-page').style.display = 'none';
+            document.getElementById('pharmacies-page').style.display = 'none';
+            document.getElementById('users-page').style.display = 'none';
+            document.getElementById('subscriptions-page').style.display = 'none';
+            document.getElementById('settings-page').style.display = 'none';
             document.getElementById(page + '-page').style.display = 'block';
             if(page === 'dashboard') loadData();
             if(page === 'pharmacies') displayPharmacies();
-            if(page === 'users') displayUsers();
-            if(page === 'subscriptions') displaySubscriptions();
         }
         
         function saveSettings() {
-            localStorage.setItem('developer_settings', JSON.stringify({
-                whatsapp: document.getElementById('whatsapp-number').value,
-                email: document.getElementById('developer-email').value
-            }));
             alert('✅ تم حفظ الإعدادات');
         }
         
-        showPage('dashboard');
+        showPage('pharmacies');
     </script>
 </body>
 </html>
-
-
-
