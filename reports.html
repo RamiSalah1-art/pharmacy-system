@@ -5,106 +5,179 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التقارير - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', 'Segoe UI', sans-serif; background: #f5f7fa; }
-        .app-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); position: fixed; height: 100vh; overflow-y: auto; }
-        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #e0e0e0; }
-        .sidebar-header i { font-size: 40px; color: #2c7da0; }
-        .sidebar-nav a { display: flex; align-items: center; padding: 12px 20px; color: #2c3e50; text-decoration: none; transition: 0.3s; }
-        .sidebar-nav a:hover, .sidebar-nav a.active { background: linear-gradient(90deg, #2c7da0, #61a5c2); color: white; }
-        .sidebar-nav i { width: 24px; margin-left: 10px; }
-        .sidebar-footer { padding: 20px; border-top: 1px solid #e0e0e0; position: absolute; bottom: 0; width: 100%; }
-        .logout-btn { width: 100%; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; }
-        .main-content { flex: 1; margin-right: 260px; }
-        .top-bar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .menu-toggle { background: none; border: none; font-size: 20px; cursor: pointer; }
-        .content-wrapper { padding: 30px; }
-        
-        /* فلترة التاريخ */
-        .date-filter {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        body {
+            font-family: 'Cairo', 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
         }
-        .date-filter h3 {
-            margin-bottom: 15px;
-            color: #2c7da0;
+        .app-container { display: flex; height: 100vh; }
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e2a3a, #0f1724);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
         }
-        .date-range {
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header i { font-size: 40px; color: #f39c12; }
+        .sidebar-nav a {
             display: flex;
-            gap: 20px;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            gap: 10px;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(255,255,255,0.1);
+            color: #f39c12;
+        }
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .main-content {
+            flex: 1;
+            margin-right: 260px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .top-bar {
+            background: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* فلترة سريعة */
+        .quick-filters {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .quick-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .quick-btn {
+            padding: 8px 18px;
+            background: #ecf0f1;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Cairo', sans-serif;
+        }
+        .quick-btn.active {
+            background: #2c7da0;
+            color: white;
+        }
+        .custom-date {
+            display: flex;
+            gap: 15px;
             flex-wrap: wrap;
             align-items: flex-end;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
         }
         .date-group {
             flex: 1;
-            min-width: 180px;
+            min-width: 150px;
         }
         .date-group label {
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
-            color: #2c3e50;
+            font-size: 12px;
+            color: #7f8c8d;
         }
         .date-group input {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
+            padding: 8px;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            font-family: 'Cairo', sans-serif;
-        }
-        .quick-filters {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        .quick-btn {
-            padding: 6px 15px;
-            background: #ecf0f1;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .quick-btn:hover {
-            background: #2c7da0;
-            color: white;
         }
         .btn-generate {
             background: #27ae60;
             color: white;
-            padding: 10px 25px;
             border: none;
+            padding: 8px 20px;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-generate:hover {
-            background: #219653;
         }
         
         /* بطاقات الإحصائيات */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 15px;
+            margin-bottom: 25px;
         }
         .stat-card {
             background: white;
             padding: 20px;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
         }
-        .stat-card i { font-size: 40px; color: #2c7da0; margin-bottom: 10px; }
-        .stat-value { font-size: 28px; font-weight: bold; color: #2c7da0; }
-        .stat-label { color: #7f8c8d; margin-top: 5px; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card i { font-size: 35px; color: #2c7da0; margin-bottom: 10px; }
+        .stat-value { font-size: 28px; font-weight: bold; color: #2c3e50; }
+        .stat-label { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
+        
+        /* الرسم البياني */
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .chart-container h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        canvas { max-height: 300px; width: 100%; }
         
         /* الجداول */
         .table-container {
@@ -112,7 +185,14 @@
             border-radius: 15px;
             overflow-x: auto;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .table-container h3 {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .data-table {
             width: 100%;
@@ -123,134 +203,41 @@
             text-align: right;
             border-bottom: 1px solid #e0e0e0;
         }
-        .data-table th {
-            background: #f8f9fa;
+        .data-table th { background: #f8f9fa; font-weight: 600; }
+        
+        .btn-export {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
         }
-        .text-center { text-align: center; }
-        .period-info {
-            background: #e8f4f8;
-            padding: 10px 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: inline-block;
+        .btn-print {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
         }
         
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(100%); }
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 100; }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-right: 0; }
-            .date-range { flex-direction: column; }
+            .menu-toggle { display: block; }
+            .custom-date { flex-direction: column; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
-            /* تنسيق الهاتف */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
-            }
-            .overlay.active {
-                display: block;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-            .overlay {
-                display: none;
-            }
-        }        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }</style>
+    </style>
 </head>
-<body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+<body>
     <div class="app-container">
-        <aside class="sidebar" id="sidebar"><div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">✕</button></div>
-            <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3 id="pharmacyName">نظام الصيدلية</h3></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><i class="fas fa-chart-line"></i><h3 id="pharmacyName">نظام الصيدلية</h3></div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html"><i class="fas fa-chart-line"></i> لوحة التحكم</a>
                 <a href="inventory.html"><i class="fas fa-boxes"></i> المخزون</a>
@@ -260,397 +247,222 @@
                 <a href="reports.html" class="active"><i class="fas fa-chart-bar"></i> التقارير</a>
                 <a href="settings.html"><i class="fas fa-cog"></i> الإعدادات</a>
             </nav>
-            <div class="sidebar-footer"><button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button></div>
+            <div class="sidebar-footer"><button onclick="logout()" class="logout-btn">تسجيل الخروج</button></div>
         </aside>
+        
         <main class="main-content">
             <header class="top-bar">
-                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-                <div class="user-info"><span id="userName"></span><i class="fas fa-user-circle"></i></div>
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <div><span id="userName"></span> <i class="fas fa-user-circle"></i></div>
             </header>
+            
             <div class="content-wrapper">
-                <h1>📊 التقارير والإحصائيات</h1>
+                <h1 style="margin-bottom: 20px;">📊 التقارير والإحصائيات</h1>
                 
-                <!-- فلترة الفترة -->
-                <div class="date-filter">
-                    <h3><i class="fas fa-calendar-alt"></i> تقرير حسب الفترة</h3>
-                    <div class="date-range">
-                        <div class="date-group">
-                            <label>📅 من تاريخ</label>
-                            <input type="date" id="fromDate">
-                        </div>
-                        <div class="date-group">
-                            <label>📅 إلى تاريخ</label>
-                            <input type="date" id="toDate">
-                        </div>
-                        <div class="date-group">
-                            <button class="btn-generate" onclick="generateReport()">
-                                <i class="fas fa-chart-line"></i> إنشاء التقرير
-                            </button>
-                        </div>
+                <!-- فلترة سريعة -->
+                <div class="quick-filters">
+                    <div class="quick-buttons">
+                        <button class="quick-btn" onclick="setQuickReport('today')">📆 اليوم</button>
+                        <button class="quick-btn" onclick="setQuickReport('yesterday')">📅 أمس</button>
+                        <button class="quick-btn" onclick="setQuickReport('week')">📊 هذا الأسبوع</button>
+                        <button class="quick-btn" onclick="setQuickReport('month')">📈 هذا الشهر</button>
+                        <button class="quick-btn" onclick="setQuickReport('year')">🗓️ هذه السنة</button>
                     </div>
-                    <div class="quick-filters">
-                        <button class="quick-btn" onclick="setToday()">📆 اليوم</button>
-                        <button class="quick-btn" onclick="setYesterday()">📅 أمس</button>
-                        <button class="quick-btn" onclick="setThisWeek()">📊 هذا الأسبوع</button>
-                        <button class="quick-btn" onclick="setThisMonth()">📈 هذا الشهر</button>
-                        <button class="quick-btn" onclick="setLastMonth()">📉 الشهر الماضي</button>
-                        <button class="quick-btn" onclick="setThisYear()">🗓️ هذه السنة</button>
-                        <button class="quick-btn" onclick="clearDates()">🗑️ مسح</button>
+                    <div class="custom-date">
+                        <div class="date-group"><label>📅 من تاريخ</label><input type="date" id="fromDate"></div>
+                        <div class="date-group"><label>📅 إلى تاريخ</label><input type="date" id="toDate"></div>
+                        <button class="btn-generate" onclick="generateReport()"><i class="fas fa-chart-line"></i> إنشاء التقرير</button>
                     </div>
                 </div>
-                
-                                
-                <div style="display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap;">
-                    <button onclick="window.print()" style="background:#27ae60;color:white;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;">
-                        <i class="fas fa-print"></i> طباعة التقرير
-                    </button>
-                    <button onclick="exportToExcel()" style="background:#f39c12;color:white;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;">
-                        <i class="fas fa-file-excel"></i> تصدير Excel
-                    </button>
-                    <button onclick="copyToClipboard()" style="background:#3498db;color:white;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;">
-                        <i class="fas fa-copy"></i> نسخ التقرير
-                    </button>
-                </div>
-                
                 
                 <!-- بطاقات الإحصائيات -->
                 <div class="stats-grid" id="statsGrid"></div>
                 
-                <h2>📋 تفاصيل المبيعات</h2>
+                <!-- الرسم البياني -->
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-line"></i> رسم بياني للمبيعات اليومية</h3>
+                    <canvas id="salesChart"></canvas>
+                </div>
+                
+                <!-- أفضل المنتجات وأفضل العملاء -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                    <div class="table-container" style="margin:0;">
+                        <h3>🏆 أفضل المنتجات مبيعاً</h3>
+                        <table class="data-table"><thead><th>المنتج</th><th>الكمية</th><th>المبيعات</th></thead><tbody id="topProducts"></tbody></table>
+                    </div>
+                    <div class="table-container" style="margin:0;">
+                        <h3>👥 أفضل العملاء</h3>
+                        <table class="data-table"><thead><th>العميل</th><th>عدد المشتريات</th><th>الإجمالي</th></thead><tbody id="topCustomers"></tbody></table>
+                    </div>
+                </div>
+                
+                <!-- تفاصيل المبيعات -->
                 <div class="table-container">
+                    <h3>📋 تفاصيل المبيعات
+                        <div>
+                            <button class="btn-print" onclick="printReport()"><i class="fas fa-print"></i> طباعة</button>
+                            <button class="btn-export" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                        </div>
+                    </h3>
                     <table class="data-table">
-                        <thead>
-                            <th><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>طريقة الدفع</th><th>المبلغ</th>
-                        </thead>
+                        <thead><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>طريقة الدفع</th><th>المبلغ</th></thead>
                         <tbody id="invoicesList"></tbody>
-                    </table>
-                </div>
-                
-                <h2>🏆 أفضل المنتجات مبيعاً</h2>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead><tr><th>المنتج</th><th>الكمية المباعة</th><th>إجمالي المبيعات</th></tr></thead>
-                        <tbody id="topProducts"></tbody>
-                    </table>
-                </div>
-                
-                <h2>👥 أفضل العملاء</h2>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead><tr><th>العميل</th><th>عدد المشتريات</th><th>إجمالي المشتريات</th></tr></thead>
-                        <tbody id="topCustomers"></tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
-    
+
     <script>
         let allProducts = [], allCustomers = [], allInvoices = [];
         let filteredInvoices = [];
-        let currentFromDate = '', currentToDate = '';
+        let salesChart = null;
         
-        // تحميل البيانات
         function loadData() {
             allProducts = JSON.parse(localStorage.getItem('products') || '[]');
             allCustomers = JSON.parse(localStorage.getItem('customers') || '[]');
             allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
             
-            // تعيين التواريخ الافتراضية (آخر 30 يوم)
             const today = new Date();
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(today.getDate() - 30);
-            
-            document.getElementById('fromDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+            const weekAgo = new Date();
+            weekAgo.setDate(today.getDate() - 30);
+            document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
             document.getElementById('toDate').value = today.toISOString().split('T')[0];
             
             generateReport();
         }
         
-        // إنشاء التقرير حسب الفترة
+        function setQuickReport(type) {
+            const today = new Date();
+            let from = new Date(), to = new Date();
+            
+            if (type === 'today') { from = to = today; }
+            else if (type === 'yesterday') { from = to = new Date(today.setDate(today.getDate() - 1)); }
+            else if (type === 'week') { from = new Date(today); from.setDate(today.getDate() - 7); to = new Date(); }
+            else if (type === 'month') { from = new Date(today.getFullYear(), today.getMonth(), 1); to = new Date(); }
+            else if (type === 'year') { from = new Date(today.getFullYear(), 0, 1); to = new Date(); }
+            
+            document.getElementById('fromDate').value = from.toISOString().split('T')[0];
+            document.getElementById('toDate').value = to.toISOString().split('T')[0];
+            generateReport();
+        }
+        
         function generateReport() {
             const fromDate = document.getElementById('fromDate').value;
             const toDate = document.getElementById('toDate').value;
+            if (!fromDate || !toDate) { alert('يرجى اختيار الفترة'); return; }
             
-            if (!fromDate || !toDate) {
-                alert('⚠️ يرجى اختيار الفترة (من تاريخ - إلى تاريخ)');
-                return;
-            }
+            const from = new Date(fromDate); from.setHours(0,0,0,0);
+            const to = new Date(toDate); to.setHours(23,59,59,999);
             
-            currentFromDate = fromDate;
-            currentToDate = toDate;
-            
-            const from = new Date(fromDate);
-            from.setHours(0, 0, 0, 0);
-            const to = new Date(toDate);
-            to.setHours(23, 59, 59, 999);
-            
-            // فلترة الفواتير حسب الفترة
             filteredInvoices = allInvoices.filter(inv => {
-                const invDate = new Date(inv.date);
-                return invDate >= from && invDate <= to;
+                const d = new Date(inv.date);
+                return d >= from && d <= to;
             });
-            
-            // عرض معلومات الفترة
-            const fromFormatted = new Date(fromDate).toLocaleDateString('ar-SA');
-            const toFormatted = new Date(toDate).toLocaleDateString('ar-SA');
-            document.getElementById('periodInfo').innerHTML = `
-                <i class="fas fa-calendar-check"></i> 
-                الفترة: ${fromFormatted} - ${toFormatted} 
-                (عدد الفواتير: ${filteredInvoices.length})
-            `;
             
             updateStats();
-            displayInvoicesList();
+            updateChart();
             displayTopProducts();
             displayTopCustomers();
+            displayInvoicesList();
         }
         
-        // تحديث الإحصائيات
         function updateStats() {
-            const totalInvoices = filteredInvoices.length;
-            const totalSales = filteredInvoices.reduce((sum, i) => sum + (i.total || 0), 0);
-            const totalItems = filteredInvoices.reduce((sum, i) => {
-                if (i.items) return sum + i.items.reduce((s, item) => s + (item.quantity || 0), 0);
-                return sum;
-            }, 0);
-            
-            const paymentMethods = { نقدي: 0, 'تحويل بنكي': 0 };
-            filteredInvoices.forEach(i => {
-                if (i.paymentMethod === 'نقدي') paymentMethods.نقدي++;
-                else if (i.paymentMethod === 'تحويل بنكي') paymentMethods['تحويل بنكي']++;
-            });
+            const total = filteredInvoices.reduce((s,i) => s + (i.total || 0), 0);
+            const count = filteredInvoices.length;
+            const items = filteredInvoices.reduce((s,i) => s + (i.items ? i.items.reduce((a,b) => a + (b.quantity || 0), 0) : 0), 0);
+            const cash = filteredInvoices.filter(i => i.paymentMethod === 'نقدي').length;
+            const bank = filteredInvoices.filter(i => i.paymentMethod === 'تحويل بنكي').length;
             
             document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card"><i class="fas fa-file-invoice"></i><div class="stat-value">${totalInvoices}</div><div class="stat-label">عدد الفواتير</div></div>
-                <div class="stat-card"><i class="fas fa-chart-line"></i><div class="stat-value">${totalSales.toFixed(2)} ج.س</div><div class="stat-label">إجمالي المبيعات</div></div>
-                <div class="stat-card"><i class="fas fa-boxes"></i><div class="stat-value">${totalItems}</div><div class="stat-label">الوحدات المباعة</div></div>
-                <div class="stat-card"><i class="fas fa-money-bill-wave"></i><div class="stat-value">${paymentMethods.نقدي}</div><div class="stat-label">مبيعات نقدي</div></div>
-                <div class="stat-card"><i class="fas fa-university"></i><div class="stat-value">${paymentMethods['تحويل بنكي']}</div><div class="stat-label">تحويل بنكي</div></div>
+                <div class="stat-card"><i class="fas fa-file-invoice"></i><div class="stat-value">${count}</div><div class="stat-label">عدد الفواتير</div></div>
+                <div class="stat-card"><i class="fas fa-chart-line"></i><div class="stat-value">${total.toFixed(2)} ج.س</div><div class="stat-label">إجمالي المبيعات</div></div>
+                <div class="stat-card"><i class="fas fa-boxes"></i><div class="stat-value">${items}</div><div class="stat-label">الوحدات المباعة</div></div>
+                <div class="stat-card"><i class="fas fa-money-bill-wave"></i><div class="stat-value">${cash}</div><div class="stat-label">مبيعات نقدي</div></div>
+                <div class="stat-card"><i class="fas fa-university"></i><div class="stat-value">${bank}</div><div class="stat-label">تحويل بنكي</div></div>
             `;
         }
         
-        // عرض قائمة الفواتير
+        function updateChart() {
+            const daily = {};
+            filteredInvoices.forEach(inv => {
+                const date = new Date(inv.date).toLocaleDateString('ar-SA');
+                daily[date] = (daily[date] || 0) + (inv.total || 0);
+            });
+            const labels = Object.keys(daily).slice(-14);
+            const values = labels.map(l => daily[l]);
+            
+            if (salesChart) salesChart.destroy();
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: [{ label: 'المبيعات (ج.س)', data: values, borderColor: '#2c7da0', backgroundColor: 'rgba(44,125,160,0.1)', tension: 0.3, fill: true }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
+            });
+        }
+        
+        function displayTopProducts() {
+            const sales = {};
+            filteredInvoices.forEach(inv => {
+                if (inv.items) inv.items.forEach(item => {
+                    if (!sales[item.name]) sales[item.name] = { qty: 0, total: 0 };
+                    sales[item.name].qty += item.quantity;
+                    sales[item.name].total += item.price * item.quantity;
+                });
+            });
+            const sorted = Object.entries(sales).sort((a,b) => b[1].total - a[1].total).slice(0,5);
+            let html = '';
+            sorted.forEach(([name, data]) => { html += `实践<td>${name}</td><td>${data.qty}</td><td>${data.total.toFixed(2)} ج.س</td> </tr>`; });
+            document.getElementById('topProducts').innerHTML = html || '<tr><td colspan="3">لا توجد بيانات</td></tr>';
+        }
+        
+        function displayTopCustomers() {
+            const data = {};
+            filteredInvoices.forEach(inv => {
+                const name = inv.customerName || 'نقدي';
+                if (name === 'نقدي') return;
+                if (!data[name]) data[name] = { count: 0, total: 0 };
+                data[name].count++;
+                data[name].total += inv.total || 0;
+            });
+            const sorted = Object.entries(data).sort((a,b) => b[1].total - a[1].total).slice(0,5);
+            let html = '';
+            sorted.forEach(([name, d]) => { html += `实践<td>${name}</td><td>${d.count}</td><td>${d.total.toFixed(2)} ج.س</td> </tr>`; });
+            document.getElementById('topCustomers').innerHTML = html || '<tr><td colspan="3">لا توجد بيانات</td></tr>';
+        }
+        
         function displayInvoicesList() {
             const tbody = document.getElementById('invoicesList');
-            if (filteredInvoices.length === 0) {
-                tbody.innerHTML = '人品<td colspan="5" class="text-center">لا توجد فواتير في هذه الفترة</td></tr>';
-                return;
-            }
-            
+            if (filteredInvoices.length === 0) { tbody.innerHTML = '<tr><td colspan="5">لا توجد فواتير</td></tr>'; return; }
             let html = '';
             filteredInvoices.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(inv => {
-                const date = new Date(inv.date).toLocaleDateString('ar-SA');
-                html += `
-                    <tr>
-                        <td>${inv.number || '-'}</td>
-                        <td>${inv.customerName || 'نقدي'}</td>
-                        <td>${date}</td>
-                        <td>${inv.paymentMethod || '-'}</td>
-                        <td><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td>
-                    </tr>
-                `;
+                html += `<tr><td>${inv.number || '-'}</td><td>${inv.customerName || 'نقدي'}</td><td>${new Date(inv.date).toLocaleDateString('ar-SA')}</td><td>${inv.paymentMethod || '-'}</td><td><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td></tr>`;
             });
             tbody.innerHTML = html;
         }
         
-        // عرض أفضل المنتجات
-        function displayTopProducts() {
-            const productSales = {};
-            filteredInvoices.forEach(inv => {
-                if (inv.items) {
-                    inv.items.forEach(item => {
-                        if (!productSales[item.name]) productSales[item.name] = { qty: 0, total: 0 };
-                        productSales[item.name].qty += item.quantity;
-                        productSales[item.name].total += (item.price * item.quantity);
-                    });
-                }
-            });
-            
-            let sorted = Object.entries(productSales).sort((a,b) => b[1].total - a[1].total).slice(0, 10);
-            let html = '';
-            sorted.forEach(([name, data]) => {
-                html += `<tr><td>${name}</td><td>${data.qty}</td><td>${data.total.toFixed(2)} ج.س</td></tr>`;
-            });
-            if (html === '') html = '<tr><td colspan="3" class="text-center">لا توجد بيانات</td></tr>';
-            document.getElementById('topProducts').innerHTML = html;
-        }
+        function printReport() { window.print(); }
         
-        // عرض أفضل العملاء
-        function displayTopCustomers() {
-            let customerData = {};
-            allCustomers.forEach(c => { customerData[c.id] = { name: c.name, count: 0, total: 0 }; });
-            filteredInvoices.forEach(inv => {
-                if (inv.customerId && customerData[inv.customerId]) {
-                    customerData[inv.customerId].count++;
-                    customerData[inv.customerId].total += inv.total || 0;
-                } else if (inv.customerName && inv.customerName !== 'نقدي') {
-                    if (!customerData[inv.customerName]) {
-                        customerData[inv.customerName] = { name: inv.customerName, count: 0, total: 0 };
-                    }
-                    customerData[inv.customerName].count++;
-                    customerData[inv.customerName].total += inv.total || 0;
-                }
-            });
-            
-            let sorted = Object.values(customerData).filter(c => c.count > 0).sort((a,b) => b.total - a.total).slice(0, 10);
-            let html = '';
-            sorted.forEach(c => {
-                html += `<tr><td>${c.name}</td><td>${c.count}</td><td>${c.total.toFixed(2)} ج.س</td></tr>`;
-            });
-            if (html === '') html = '<tr><td colspan="3" class="text-center">لا توجد بيانات</td></tr>';
-            document.getElementById('topCustomers').innerHTML = html;
-        }
-        
-        // دوال الفلاتر السريعة
-        function setToday() {
-            const today = new Date();
-            document.getElementById('fromDate').value = today.toISOString().split('T')[0];
-            document.getElementById('toDate').value = today.toISOString().split('T')[0];
-            generateReport();
-        }
-        
-        function setYesterday() {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            document.getElementById('fromDate').value = yesterday.toISOString().split('T')[0];
-            document.getElementById('toDate').value = yesterday.toISOString().split('T')[0];
-            generateReport();
-        }
-        
-        function setThisWeek() {
-            const today = new Date();
-            const firstDay = new Date(today);
-            firstDay.setDate(today.getDate() - today.getDay() + 1);
-            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
-            document.getElementById('toDate').value = today.toISOString().split('T')[0];
-            generateReport();
-        }
-        
-        function setThisMonth() {
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
-            document.getElementById('toDate').value = today.toISOString().split('T')[0];
-            generateReport();
-        }
-        
-        function setLastMonth() {
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
-            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
-            document.getElementById('toDate').value = lastDay.toISOString().split('T')[0];
-            generateReport();
-        }
-        
-        function setThisYear() {
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), 0, 1);
-            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
-            document.getElementById('toDate').value = today.toISOString().split('T')[0];
-            generateReport();
-        }
-        
-        function clearDates() {
-            document.getElementById('fromDate').value = '';
-            document.getElementById('toDate').value = '';
-            document.getElementById('periodInfo').innerHTML = '';
-            filteredInvoices = [];
-            document.getElementById('statsGrid').innerHTML = '';
-            document.getElementById('invoicesList').innerHTML = '<tr><td colspan="5" class="text-center">اختر الفترة ثم اضغط إنشاء التقرير</td></tr>';
-            document.getElementById('topProducts').innerHTML = '<tr><td colspan="3" class="text-center">اختر الفترة ثم اضغط إنشاء التقرير</td></tr>';
-            document.getElementById('topCustomers').innerHTML = '<tr><td colspan="3" class="text-center">اختر الفترة ثم اضغط إنشاء التقرير</td></tr>';
-        }
-        
-        // دوال مساعدة
-                function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('active');
-            if (overlay) overlay.classList.toggle('active');
-        }
-        function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); } {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.remove('active');
-            if (overlay) overlay.classList.remove('active');
-        }
-        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
-        
-        function updatePharmacyName() {
-            const settings = localStorage.getItem('pharmacySettings');
-            if (settings) {
-                const data = JSON.parse(settings);
-                document.getElementById('pharmacyName').innerHTML = data.pharmacyName || 'نظام الصيدلية';
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
-            document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
-            updatePharmacyName();
-            loadData();
-        });
-            
-        // تصدير إلى Excel (CSV)
         function exportToExcel() {
-            let data = [];
-            const tables = document.querySelectorAll('.data-table');
-            tables.forEach(table => {
-                const rows = table.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const rowData = [];
-                    row.querySelectorAll('th, td').forEach(cell => {
-                        rowData.push(cell.innerText.trim());
-                    });
-                    if (rowData.length > 0) data.push(rowData);
-                });
-                data.push([]);
+            let csv = "رقم الفاتورة,العميل,التاريخ,طريقة الدفع,المبلغ\n";
+            filteredInvoices.forEach(inv => {
+                csv += `"${inv.number}","${inv.customerName || 'نقدي'}","${new Date(inv.date).toLocaleDateString('ar-SA')}","${inv.paymentMethod || '-'}",${(inv.total || 0).toFixed(2)}\n`;
             });
-            
-            let csv = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
             const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'تقرير_المبيعات_' + new Date().toISOString().split('T')[0] + '.csv');
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = 'تقرير_المبيعات.csv';
             link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            alert('✅ تم تصدير التقرير بنجاح');
+            URL.revokeObjectURL(link.href);
+            alert('✅ تم تصدير التقرير');
         }
         
-        // نسخ التقرير إلى الحافظة
-        function copyToClipboard() {
-            let text = '';
-            const tables = document.querySelectorAll('.data-table');
-            tables.forEach(table => {
-                const rows = table.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const rowText = [];
-                    row.querySelectorAll('th, td').forEach(cell => {
-                        rowText.push(cell.innerText.trim());
-                    });
-                    text += rowText.join(' | ') + '\n';
-                });
-                text += '\n';
-            });
-            navigator.clipboard.writeText(text);
-            alert('✅ تم نسخ التقرير إلى الحافظة');
-        }
-</script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+        
+        document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
+        if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
+        loadData();
+    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
