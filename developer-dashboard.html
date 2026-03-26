@@ -169,7 +169,7 @@
                 <button class="menu-toggle" onclick="toggleSidebar()" style="background:none;border:none;font-size:20px;">☰</button>
                 <div><i class="fas fa-user-circle"></i> Rami Salah</div>
             </header>
-            <div class="content-wrapper">
+            <div class="content-wrapper" style="height: 100%; overflow-y: auto;">
                 <div id="dashboard-page">
                     <div class="stats-grid">
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-store"></i></div><div><h3>إجمالي الصيدليات</h3><p class="stat-value" id="total-pharmacies">0</p></div></div>
@@ -208,7 +208,7 @@
     </div>
     
     <div id="pharmacyModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
             <div class="modal-header"><h3>➕ إضافة صيدلية جديدة</h3><button onclick="closeModal()">&times;</button></div>
             <div class="modal-body">
                 <div class="form-group"><label>🏥 اسم الصيدلية *</label><input type="text" id="pharmacyName" placeholder="مثال: صيدلية السلام"></div>
@@ -395,3 +395,4 @@
     </script>
 </body>
 </html>
+
