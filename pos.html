@@ -767,7 +767,7 @@
                             } catch(e) {
                                 console.log('QR Error:', e);
                                 const qrContainer = document.getElementById('printQRCode');
-                                if (qrContainer) qrContainer.innerHTML = '<div style="font-size:14px;color:#2c7da0;">?? ${companyData.pharmacyName || ''}</div>';
+                                if (qrContainer) qrContainer.innerHTML = '<div style="font-size:14px;color:#2c7da0;"> ${companyData.pharmacyName || ''}</div>';
                             }
                         })();
                     <\/script>
