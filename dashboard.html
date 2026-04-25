@@ -130,7 +130,7 @@
                 grid-template-columns: 1fr;
             }
         }
-            /* تنسيق الهاتف */
+        /* تنسيق الهاتف */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -176,76 +176,39 @@
             .overlay {
                 display: none;
             }
-        }        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
         }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
+        .sidebar-header {
+            text-align: center;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
         }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }</style>
+        .sidebar-header img {
+            max-width: 60px;
+            max-height: 60px;
+            display: none;
+            margin-bottom: 8px;
+        }
+    </style>
 </head>
-<body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+<body>
+    <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
     <div class="app-container">
-        <aside class="sidebar" id="sidebar"><div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">?</button></div>
-            <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
+        <aside class="sidebar" id="sidebar">
+            <div style="text-align:left; padding:10px;">
+                <button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#2c7da0;">✕</button>
+            </div>
+            <div class="sidebar-header">
+                <img id="sidebarLogo" src="" alt="الشعار" style="max-width: 60px; max-height: 60px; display: none; margin-bottom: 8px;">
+                <i class="fas fa-hospital-user"></i>
+                <h3 id="pharmacyNameHeader">نظام الصيدلية</h3>
+            </div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html" class="nav-item active"><i class="fas fa-chart-line"></i><span>لوحة التحكم</span></a>
                 <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i><span>المخزون</span></a>
                 <a href="pos.html" class="nav-item"><i class="fas fa-cash-register"></i><span>نقطة البيع</span></a>
                 <a href="customers.html" class="nav-item"><i class="fas fa-users"></i><span>العملاء</span></a>
-                <a href="invoices.html" class="nav-item"><i class="fas fa-file-invoice"></i><span>الفواتير</span></a><a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a>
+                <a href="invoices.html" class="nav-item"><i class="fas fa-file-invoice"></i><span>الفواتير</span></a>
+                <a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a>
                 <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>الإعدادات</span></a>
             </nav>
             <div class="sidebar-footer"><button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>تسجيل الخروج</span></button></div>
@@ -317,9 +280,10 @@
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
-                            <th><th>رقم الفاتورة</th><th>العميل</th><th>المبلغ</th><th>التاريخ</th></thead>
+                            <th>رقم الفاتورة</th><th>العميل</th><th>المبلغ</th><th>التاريخ</th>
+                        </thead>
                         <tbody id="recent-invoices">
-                            <tr><td colspan="4" class="text-center">جاري التحميل...</td></tr>
+                            <tr><td colspan="4" class="text-center">جاري التحميل...</td</tr>
                         </tbody>
                     </table>
                 </div>
@@ -334,9 +298,9 @@
                 </div>
                 <div class="table-container">
                     <table class="data-table">
-                        <thead><th><th>المنتج</th><th>الكمية</th><th>الحد الأدنى</th><th>الحالة</th></thead>
+                        <thead><th>المنتج</th><th>الكمية</th><th>الحد الأدنى</th><th>الحالة</th></thead>
                         <tbody id="low-stock-products">
-                            <tr><td colspan="4" class="text-center">جاري التحميل...</td></tr>
+                            <tr><td colspan="4" class="text-center">جاري التحميل...</td</tr>
                         </tbody>
                     </table>
                 </div>
@@ -351,9 +315,9 @@
                 </div>
                 <div class="table-container">
                     <table class="data-table">
-                        <thead><th><th>المنتج</th><th>الكمية</th><th>تاريخ الانتهاء</th><th>الحالة</th></thead>
+                        <thead><th>المنتج</th><th>الكمية</th><th>تاريخ الانتهاء</th><th>الحالة</th></thead>
                         <tbody id="expired-products">
-                            <tr><td colspan="4" class="text-center">جاري التحميل...</td></tr>
+                            <tr><td colspan="4" class="text-center">جاري التحميل...</td</tr>
                         </tbody>
                     </table>
                 </div>
@@ -366,6 +330,22 @@
         let allCustomers = [];
         let allInvoices = [];
         
+        // دالة تحميل الشعار واسم الصيدلية
+        function loadCompanyInfo() {
+            const savedLogo = localStorage.getItem('pharmacyLogo');
+            if (savedLogo) {
+                const sidebarLogo = document.getElementById('sidebarLogo');
+                if (sidebarLogo) {
+                    sidebarLogo.src = savedLogo;
+                    sidebarLogo.style.display = 'block';
+                }
+            }
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            if (settings.pharmacyName) {
+                document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName;
+            }
+        }
+        
         // تحميل البيانات
         function loadData() {
             try {
@@ -377,6 +357,7 @@
                 loadRecentInvoices();
                 loadLowStockProducts();
                 loadExpiredProducts();
+                loadCompanyInfo();
                 
             } catch (error) {
                 console.error("خطأ في تحميل البيانات:", error);
@@ -391,7 +372,10 @@
             const lowStock = allProducts.filter(p => p.quantity <= p.minStock);
             const expired = allProducts.filter(p => p.expiryDate && new Date(p.expiryDate) < new Date());
             
-            document.getElementById('today-sales') && (document.getElementById('today-sales').innerHTML = `${todaySales.toFixed(2)} <span class="currency-symbol">ج.س</span>`);
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            const currency = settings.currencySymbol || 'ج.س';
+            
+            document.getElementById('today-sales') && (document.getElementById('today-sales').innerHTML = `${todaySales.toFixed(2)} <span class="currency-symbol">${currency}</span>`);
             document.getElementById('low-stock-count') && (document.getElementById('low-stock-count').innerHTML = lowStock.length);
             document.getElementById('expired-count') && (document.getElementById('expired-count').innerHTML = expired.length);
             document.getElementById('total-customers') && (document.getElementById('total-customers').innerHTML = allCustomers.length);
@@ -434,7 +418,7 @@
             const lowStock = allProducts.filter(p => p.quantity <= p.minStock);
             
             if (lowStock.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">? لا توجد منتجات منخفضة المخزون</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">لا توجد منتجات منخفضة المخزون</td></tr>';
                 return;
             }
             
@@ -462,7 +446,7 @@
             const expired = allProducts.filter(p => p.expiryDate && new Date(p.expiryDate) < new Date());
             
             if (expired.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">? لا توجد منتجات منتهية الصلاحية</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">لا توجد منتجات منتهية الصلاحية</td></tr>';
                 return;
             }
             
@@ -484,7 +468,23 @@
         
         // دوال مساعدة
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            if (overlay) {
+                if (sidebar.classList.contains('active')) {
+                    overlay.style.display = 'block';
+                } else {
+                    overlay.style.display = 'none';
+                }
+            }
+        }
+        
+        function closeSidebar() { 
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.remove('active');
+            if (overlay) overlay.style.display = 'none';
         }
         
         function logout() {
@@ -504,50 +504,5 @@
             loadData();
         });
     </script>
-<script>
-function updateDashboardCurrency() {
-    const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
-    const currency = settings.currencySymbol || 'ج.س';
-    document.querySelectorAll('.currency-symbol, .currency-display').forEach(el => {
-        if (el) el.innerHTML = currency;
-    });
-    // تحديث الأرقام المعروضة
-    const todaySales = document.getElementById('today-sales');
-    if (todaySales && todaySales.innerHTML) {
-        const value = parseFloat(todaySales.innerHTML) || 0;
-        todaySales.innerHTML = value.toFixed(2) + ' ' + currency;
-    }
-}
-document.addEventListener('DOMContentLoaded', updateDashboardCurrency);
-</script>        <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('active');
-            if (overlay) {
-                if (sidebar.classList.contains('active')) {
-                    overlay.style.display = 'block';
-                } else {
-                    overlay.style.display = 'none';
-                }
-            }
-        }
-        function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); } {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.remove('active');
-            if (overlay) overlay.style.display = 'none';
-        }
-        </script></body>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
