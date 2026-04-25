@@ -298,15 +298,13 @@
             }
         }
         
+        // تم تعديل هذه الدالة - إزالة البيانات التجريبية
         function loadProducts() {
             const stored = localStorage.getItem('products');
-            if (stored) products = JSON.parse(stored);
-            else {
-                products = [
-                    { id: 1, name: "باراسيتامول 500mg", purchasePrice: 100, sellingPrice: 130, quantity: 150, minStock: 50, barcode: "123456", expiryDate: "2025-12-31" },
-                    { id: 2, name: "إيبوبروفين 400mg", purchasePrice: 150, sellingPrice: 195, quantity: 80, minStock: 40, barcode: "123457", expiryDate: "2025-10-15" },
-                    { id: 3, name: "أموكسيسيلين 500mg", purchasePrice: 200, sellingPrice: 260, quantity: 45, minStock: 30, barcode: "123458", expiryDate: "2025-08-20" }
-                ];
+            if (stored) {
+                products = JSON.parse(stored);
+            } else {
+                products = [];
                 localStorage.setItem('products', JSON.stringify(products));
             }
             displayProducts();
@@ -314,7 +312,7 @@
         
         function displayProducts() {
             const tbody = document.getElementById('productsList');
-            if (!products.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات</td></tr>'; return; }
+            if (!products.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات</td><tr>'; return; }
             let html = '';
             products.forEach((p, i) => {
                 const lowStockClass = p.quantity <= p.minStock ? 'text-danger' : '';
