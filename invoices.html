@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +6,7 @@
     <title>الفواتير - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -185,6 +186,24 @@
             background: white;
             border-radius: 12px;
         }
+        /* تنسيق الطباعة */
+        @media print {
+            .sidebar, .top-bar, .filters-bar, .btn-primary, .btn-edit, .btn-delete, .btn-print, .invoice-header, .menu-toggle {
+                display: none !important;
+            }
+            .invoice-content {
+                display: block !important;
+                padding: 0 !important;
+            }
+            .invoice-card {
+                box-shadow: none !important;
+                margin: 0 !important;
+            }
+            body {
+                background: white !important;
+                padding: 20px !important;
+            }
+        }
         @media (max-width: 768px) {
             .sidebar { position: fixed; transform: translateX(-100%); transition: 0.3s; }
             .sidebar.active { transform: translateX(0); }
@@ -199,7 +218,11 @@
 <body>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
+            <div class="sidebar-header">
+                <img id="sidebarLogo" src="" alt="الشعار" style="max-width: 50px; max-height: 50px; display: none; margin-bottom: 5px;">
+                <i class="fas fa-hospital-user"></i>
+                <h3 id="pharmacyNameHeader">نظام الصيدلية</h3>
+            </div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html"><i class="fas fa-chart-line"></i> لوحة التحكم</a>
                 <a href="inventory.html"><i class="fas fa-boxes"></i> المخزون</a>
@@ -213,12 +236,12 @@
         </aside>
         <main class="main-content">
             <header class="top-bar">
-                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <button class="menu-toggle" onclick="toggleSidebar()">?</button>
                 <div><span id="userName"></span> <i class="fas fa-user-circle"></i></div>
             </header>
             <div class="content-wrapper">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h1>📄 الفواتير</h1>
+                    <h1> الفواتير</h1>
                     <a href="pos.html" class="btn-primary"><i class="fas fa-plus"></i> فاتورة جديدة</a>
                 </div>
                 
@@ -240,11 +263,84 @@
     <script>
         let allInvoices = [];
         
+        // دوال الشعار وبيانات الشركة
+        function loadCompanyData() {
+            const savedLogo = localStorage.getItem('pharmacyLogo');
+            if (savedLogo) {
+                const sidebarLogo = document.getElementById('sidebarLogo');
+                if (sidebarLogo) {
+                    sidebarLogo.src = savedLogo;
+                    sidebarLogo.style.display = 'block';
+                }
+            }
+            
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            if (settings.pharmacyName) {
+                document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName;
+            }
+        }
+        
+        function getCompanyData() {
+            const savedData = localStorage.getItem('companyData');
+            if (savedData) {
+                return JSON.parse(savedData);
+            }
+            // بيانات افتراضية إذا مافيش بيانات محفوظة
+            return {
+                pharmacyName: '',
+                commercialRegister: '',
+                taxNumber: '',
+                phone: '',
+                email: '',
+                address: '',
+                website: ''
+            };
+        }
+        
+        // نص QR قصير ومناسب (تم التعديل هنا)
+        function formatQRText() {
+            const data = getCompanyData();
+            let parts = [];
+            if (data.pharmacyName) parts.push(data.pharmacyName);
+            if (data.phone) parts.push(`هاتف:${data.phone}`);
+            if (data.address) parts.push(data.address);
+            if (data.commercialRegister) parts.push(`سجل:${data.commercialRegister}`);
+            if (data.taxNumber) parts.push(`ضريبي:${data.taxNumber}`);
+            
+            if (parts.length === 0) return 'بيانات الصيدلية';
+            return parts.join(' | ');
+        }
+        
+        function generateQRCodeForPrint(containerId, size = 100) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            const qrText = formatQRText();
+            if (qrText && qrText !== 'بيانات الصيدلية') {
+                try {
+                    new QRCode(container, {
+                        text: qrText,
+                        width: size,
+                        height: size,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } catch(e) {
+                    console.error('QR Error:', e);
+                    container.innerHTML = '<p style="font-size:12px;color:gray;">خطأ في الباركود</p>';
+                }
+            } else {
+                container.innerHTML = '<p style="font-size:12px;color:gray;">بيانات الشركة</p>';
+            }
+        }
+        
         function loadInvoices() {
             const stored = localStorage.getItem('invoices');
             if (stored) allInvoices = JSON.parse(stored);
             else allInvoices = [];
             displayInvoices(allInvoices);
+            loadCompanyData();
         }
         
         function displayInvoices(invoices) {
@@ -316,62 +412,190 @@
             if (newNotes !== null) inv.notes = newNotes;
             localStorage.setItem('invoices', JSON.stringify(allInvoices));
             displayInvoices(allInvoices);
-            alert('✅ تم تعديل الفاتورة بنجاح');
+            alert('? تم تعديل الفاتورة بنجاح');
         }
         
         function deleteInvoice(index) {
-            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
+            if (!confirm('?? هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
             const invoice = allInvoices[index];
             const invoiceNumber = invoice ? invoice.number : 'الفاتورة';
             allInvoices.splice(index, 1);
             localStorage.setItem('invoices', JSON.stringify(allInvoices));
             displayInvoices(allInvoices);
-            alert(`✅ تم حذف ${invoiceNumber} بنجاح`);
+            alert(`? تم حذف ${invoiceNumber} بنجاح`);
         }
         
         function printInvoice(index) {
             const inv = allInvoices[index];
             if (!inv) return;
+            
+            const companyData = getCompanyData();
+            const savedLogo = localStorage.getItem('pharmacyLogo');
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            const currencySymbol = settings.currencySymbol || 'ج.س';
+            const date = new Date(inv.date);
+            const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+            
+            // بناء HTML للطباعة مع الشعار و QR Code
+            let logoHtml = '';
+            if (savedLogo) {
+                logoHtml = `<img src="${savedLogo}" style="max-width: 120px; max-height: 80px; margin-bottom: 10px;">`;
+            }
+            
+            // بناء بيانات الشركة HTML (نص قصير)
+            let companyInfoHtml = '';
+            if (companyData.pharmacyName) companyInfoHtml += `<div><strong>${companyData.pharmacyName}</strong></div>`;
+            if (companyData.commercialRegister) companyInfoHtml += `<div>سجل تجاري: ${companyData.commercialRegister}</div>`;
+            if (companyData.taxNumber) companyInfoHtml += `<div>رقم ضريبي: ${companyData.taxNumber}</div>`;
+            if (companyData.phone) companyInfoHtml += `<div>${companyData.phone}</div>`;
+            if (companyData.address) companyInfoHtml += `<div>${companyData.address}</div>`;
+            
+            const qrTextShort = formatQRText();
+            
             const win = window.open('', '_blank');
             win.document.write(`
                 <html dir="rtl">
                 <head>
                     <title>فاتورة ${inv.number}</title>
                     <meta charset="UTF-8">
+                    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script>
                     <style>
-                        body { font-family: 'Cairo', sans-serif; padding: 20px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
-                        .header { text-align: center; border-bottom: 2px solid #2c7da0; padding-bottom: 15px; margin-bottom: 20px; }
-                        .total { margin-top: 20px; text-align: left; font-weight: bold; }
+                        body {
+                            font-family: 'Cairo', sans-serif;
+                            padding: 20px;
+                            max-width: 800px;
+                            margin: 0 auto;
+                        }
+                        .header {
+                            text-align: center;
+                            border-bottom: 2px solid #2c7da0;
+                            padding-bottom: 15px;
+                            margin-bottom: 20px;
+                        }
+                        .company-info {
+                            font-size: 12px;
+                            color: #555;
+                            margin-top: 5px;
+                            line-height: 1.5;
+                        }
+                        .invoice-title {
+                            font-size: 18px;
+                            font-weight: bold;
+                            margin: 10px 0;
+                        }
+                        .info-row {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 10px;
+                            flex-wrap: wrap;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 15px;
+                        }
+                        th, td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                            text-align: right;
+                        }
+                        th {
+                            background: #f5f5f5;
+                        }
+                        .total {
+                            margin-top: 20px;
+                            text-align: left;
+                            font-weight: bold;
+                            font-size: 16px;
+                        }
+                        .footer {
+                            margin-top: 30px;
+                            padding-top: 15px;
+                            border-top: 1px solid #ddd;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #777;
+                        }
+                        .qr-code-section {
+                            display: flex;
+                            justify-content: center;
+                            margin-top: 20px;
+                        }
+                        .invoice-container {
+                            border: 1px solid #e0e0e0;
+                            padding: 20px;
+                            border-radius: 10px;
+                        }
                     </style>
                 </head>
                 <body>
-                    <div class="header">
-                        <h2>نظام إدارة الصيدليات</h2>
-                        <p>${new Date(inv.date).toLocaleString('ar-SA')}</p>
+                    <div class="invoice-container">
+                        <div class="header">
+                            ${logoHtml}
+                            <div class="company-info">${companyInfoHtml}</div>
+                            <div class="invoice-title">فاتورة شراء</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
+                            <div><strong>التاريخ:</strong> ${formattedDate}</div>
+                        </div>
+                        <div class="info-row">
+                            <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
+                            <div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div>
+                        </div>
+                        
+                        <table>
+                            <thead>
+                                <tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>
+                            </thead>
+                            <tbody>
+                                ${inv.items && inv.items.length > 0 ? inv.items.map(item => `
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>${item.price.toFixed(2)} ${currencySymbol}</td>
+                                    <td>${(item.price * item.quantity).toFixed(2)} ${currencySymbol}</td>
+                                </tr>`).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
+                            </tbody>
+                        </table>
+                        
+                        <div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ${currencySymbol}</div>
+                        
+                        <div class="qr-code-section" id="printQRCode"></div>
+                        
+                        <div class="footer">
+                            ${companyData.pharmacyName || 'نظام الصيدليات'} - شكراً لثقتكم
+                        </div>
                     </div>
-                    <div><strong>رقم الفاتورة:</strong> ${inv.number}</div>
-                    <div><strong>العميل:</strong> ${inv.customerName || 'نقدي'}</div>
-                    <div><strong>طريقة الدفع:</strong> ${inv.paymentMethod || 'نقدي'}</div>
-                    <table>
-                        <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-                        <tbody>
-                            ${inv.items ? inv.items.map(item => `
-                            <tr>
-                                <td>${item.name}</td>
-                                <td>${item.quantity}</td>
-                                <td>${item.price.toFixed(2)} ج.س</td>
-                                <td>${(item.price * item.quantity).toFixed(2)} ج.س</td>
-                            </tr>`).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
-                        </tbody>
-                    </table>
-                    <div class="total">الإجمالي: ${(inv.total || 0).toFixed(2)} ج.س</div>
+                    <script>
+                        // توليد QR Code بعد تحميل الصفحة
+                        setTimeout(() => {
+                            const qrText = ${JSON.stringify(qrTextShort)};
+                            const qrContainer = document.getElementById('printQRCode');
+                            if (qrContainer && qrText && qrText !== 'بيانات الصيدلية') {
+                                try {
+                                    new QRCode(qrContainer, {
+                                        text: qrText,
+                                        width: 120,
+                                        height: 120,
+                                        colorDark: "#000000",
+                                        colorLight: "#ffffff",
+                                        correctLevel: QRCode.CorrectLevel.M
+                                    });
+                                } catch(e) {
+                                    qrContainer.innerHTML = '<p style="font-size:12px;color:gray;">خطأ</p>';
+                                }
+                            } else if (qrContainer) {
+                                qrContainer.innerHTML = '<p style="font-size:12px;color:gray;">${companyData.pharmacyName || 'بيانات الصيدلية'}</p>';
+                            }
+                        }, 100);
+                    <\/script>
                 </body>
                 </html>
             `);
             win.document.close();
-            win.print();
+            setTimeout(() => { win.print(); }, 200);
         }
         
         function applyFilters() {

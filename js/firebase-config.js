@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // إعدادات Firebase
 // قم باستبدال هذه البيانات ببيانات مشروع Firebase الخاص بك
 // ============================================
@@ -23,7 +23,7 @@ if (typeof firebase !== 'undefined') {
     const db = firebase.firestore();
     const storage = firebase.storage();
     
-    console.log("✅ Firebase initialized");
+    console.log("? Firebase initialized");
 }
 
 // وضع التخزين (محلي/سحابي) - يتم تحديده من الإعدادات

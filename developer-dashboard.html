@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -58,7 +58,7 @@
     </div>
     
     <div class="main-content">
-        <div class="top-bar"><button onclick="toggleSidebar()" style="background:none;border:none;font-size:20px;">☰</button><div>المطور</div></div>
+        <div class="top-bar"><button onclick="toggleSidebar()" style="background:none;border:none;font-size:20px;">?</button><div>المطور</div></div>
         <div class="content">
             <div id="dashboard-page">
                 <div class="stats-grid">
@@ -124,9 +124,9 @@
                 let u=await auth.createUserWithEmailAndPassword(email,pass);
                 await db.collection('pharmacies').doc(u.user.uid).set({id:u.user.uid,name:name,adminEmail:email,package:pkg,maxUsers:pkg=='basic'?1:pkg=='professional'?3:999,startDate:new Date().toISOString(),endDate:end.toISOString(),amount:amount,storageType:pkg=='basic'?'local':'cloud'});
                 await db.collection('users').doc(u.user.uid).set({uid:u.user.uid,email:email,displayName:'مدير النظام',role:'admin',pharmacyId:u.user.uid,pharmacyName:name});
-                alert(`✅ تم إضافة ${name}\n📧 ${email}\n🔑 ${pass}`);
+                alert(`? تم إضافة ${name}\n?? ${email}\n?? ${pass}`);
                 closeModal();load();
-            }catch(e){alert('❌ '+e.message)}
+            }catch(e){alert('? '+e.message)}
         }
         async function del(id){if(confirm('حذف؟')){await db.collection('pharmacies').doc(id).delete();load()}}
         function openModal(){document.getElementById('name').value='';document.getElementById('email').value='';document.getElementById('pass').value='pharmacy123';document.getElementById('pkg').value='basic';document.getElementById('dur').value='12';document.getElementById('modal').classList.add('active')}

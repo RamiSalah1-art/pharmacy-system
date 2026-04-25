@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -102,7 +102,7 @@
             const password = passwordInput.value;
             
             if (!email || !password) {
-                errorDiv.innerHTML = '❌ يرجى إدخال البريد الإلكتروني وكلمة المرور';
+                errorDiv.innerHTML = '? يرجى إدخال البريد الإلكتروني وكلمة المرور';
                 errorDiv.style.display = 'block';
                 setTimeout(() => errorDiv.style.display = 'none', 3000);
                 return;
@@ -121,11 +121,11 @@
                     errorDiv.style.display = 'block';
                     
                     if (err.code === 'auth/user-not-found') {
-                        errorDiv.innerHTML = '❌ البريد الإلكتروني غير مسجل';
+                        errorDiv.innerHTML = '? البريد الإلكتروني غير مسجل';
                     } else if (err.code === 'auth/wrong-password') {
-                        errorDiv.innerHTML = '❌ كلمة المرور غير صحيحة';
+                        errorDiv.innerHTML = '? كلمة المرور غير صحيحة';
                     } else {
-                        errorDiv.innerHTML = '❌ خطأ: ' + err.message;
+                        errorDiv.innerHTML = '? خطأ: ' + err.message;
                     }
                     
                     setTimeout(() => {

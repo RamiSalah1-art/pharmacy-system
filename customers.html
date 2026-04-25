@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -177,16 +177,6 @@
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
-                transform: translateX(-100%);
-                z-index: 100;
-            }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-right: 0; }
-        }
-            /* تنسيق الهاتف */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
                 top: 0;
                 right: -280px;
                 width: 280px;
@@ -194,105 +184,28 @@
                 transition: right 0.3s ease;
                 z-index: 1000;
             }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
-            }
-            .overlay.active {
-                display: block;
-            }
+            .sidebar.active { right: 0; }
+            .main-content { width: 100%; margin-right: 0; }
+            .menu-toggle { display: block; background: none; border: none; font-size: 24px; cursor: pointer; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+            .overlay.active { display: block; }
         }
         @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-            .overlay {
-                display: none;
-            }
-        }        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
+            .menu-toggle { display: none; }
+            .overlay { display: none; }
         }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100%;
-                transition: right 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.active {
-                right: 0;
-            }
-            .main-content {
-                margin-right: 0;
-                width: 100%;
-            }
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-        }
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }</style>
+    </style>
 </head>
-<body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+<body>
+    <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
     <div class="app-container">
-        <aside class="sidebar" id="sidebar"><div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">✕</button></div>
-            <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
+        <aside class="sidebar" id="sidebar">
+            <div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">✕</button></div>
+            <div class="sidebar-header">
+                <img id="sidebarLogo" src="" alt="الشعار" style="max-width: 60px; max-height: 60px; display: none; margin-bottom: 5px;">
+                <i class="fas fa-hospital-user"></i>
+                <h3 id="pharmacyNameHeader">نظام الصيدلية</h3>
+            </div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html"><i class="fas fa-chart-line"></i> لوحة التحكم</a>
                 <a href="inventory.html"><i class="fas fa-boxes"></i> المخزون</a>
@@ -316,9 +229,11 @@
                 </div>
                 <div class="table-wrapper">
                     <table class="data-table">
-                        <thead><th>#</th><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>العنوان</th><th>إجمالي المشتريات</th><th>الإجراءات</th></thead>
+                        <thead>
+                            <tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>العنوان</th><th>إجمالي المشتريات</th><th>الإجراءات</th></tr>
+                        </thead>
                         <tbody id="customersList"></tbody>
-                     </table>
+                    </table>
                 </div>
             </div>
         </main>
@@ -340,7 +255,25 @@
 
     <script>
         let customers = [];
-        
+
+        function loadCompanyInfo() {
+            const savedLogo = localStorage.getItem('pharmacyLogo');
+            if (savedLogo) {
+                const sidebarLogo = document.getElementById('sidebarLogo');
+                if (sidebarLogo) {
+                    sidebarLogo.src = savedLogo;
+                    sidebarLogo.style.display = 'block';
+                    // إخفاء الأيقونة إذا وجد شعار
+                    const icon = sidebarLogo.nextElementSibling;
+                    if (icon && icon.tagName === 'I') icon.style.display = 'none';
+                }
+            }
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            if (settings.pharmacyName) {
+                document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName;
+            }
+        }
+
         function loadCustomers() {
             const stored = localStorage.getItem('customers');
             if (stored) {
@@ -355,11 +288,11 @@
             }
             displayCustomers();
         }
-        
+
         function displayCustomers() {
             const tbody = document.getElementById('customersList');
             if (!customers.length) {
-                tbody.innerHTML = '病人<td colspan="7" style="text-align:center;">لا يوجد عملاء</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا يوجد عملاء</td></tr>';
                 return;
             }
             let html = '';
@@ -379,7 +312,7 @@
             });
             tbody.innerHTML = html;
         }
-        
+
         function openAddModal() {
             document.getElementById('modalTitle').innerHTML = '➕ إضافة عميل';
             document.getElementById('customerId').value = '';
@@ -389,7 +322,7 @@
             document.getElementById('customerAddress').value = '';
             document.getElementById('customerModal').classList.add('active');
         }
-        
+
         function saveCustomer() {
             const id = document.getElementById('customerId').value;
             const name = document.getElementById('customerName').value.trim();
@@ -397,7 +330,7 @@
             const phone = document.getElementById('customerPhone').value;
             const email = document.getElementById('customerEmail').value;
             const address = document.getElementById('customerAddress').value;
-            
+
             if (id === '') {
                 const newId = customers.length ? Math.max(...customers.map(c => c.id)) + 1 : 1;
                 customers.push({ id: newId, name, phone, email, address, totalSpent: 0 });
@@ -413,7 +346,7 @@
             closeModal();
             loadCustomers();
         }
-        
+
         function editCustomer(id) {
             const c = customers.find(c => c.id === id);
             if (!c) return;
@@ -425,41 +358,36 @@
             document.getElementById('customerAddress').value = c.address || '';
             document.getElementById('customerModal').classList.add('active');
         }
-        
+
         function deleteCustomer(id) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذا العميل؟')) return;
             customers = customers.filter(c => c.id !== id);
             localStorage.setItem('customers', JSON.stringify(customers));
             loadCustomers();
         }
-        
+
         function closeModal() { document.getElementById('customerModal').classList.remove('active'); }
-                function toggleSidebar() {
+        
+        function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
             sidebar.classList.toggle('active');
             if (overlay) overlay.classList.toggle('active');
         }
-        function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); } {
+        
+        function closeSidebar() { 
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
             sidebar.classList.remove('active');
             if (overlay) overlay.classList.remove('active');
         }
-        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
         
+        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
         loadCustomers();
+        loadCompanyInfo();
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-

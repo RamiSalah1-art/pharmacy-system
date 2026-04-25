@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
 <body>
@@ -62,11 +62,11 @@
         ];
         localStorage.setItem('invoices', JSON.stringify(testInvoices));
         console.log("تم إضافة 4 فواتير تجريبية");
-        alert("✅ تم إضافة 4 فواتير تجريبية للاختبار");
+        alert("? تم إضافة 4 فواتير تجريبية للاختبار");
     } else {
         const count = JSON.parse(invoices).length;
         console.log("الفواتير الموجودة:", count);
-        alert(`✅ يوجد ${count} فاتورة في النظام`);
+        alert(`? يوجد ${count} فاتورة في النظام`);
     }
     
     window.location.href = "invoices.html";

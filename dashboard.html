@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -238,7 +238,7 @@
 </head>
 <body><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
     <div class="app-container">
-        <aside class="sidebar" id="sidebar"><div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">✕</button></div>
+        <aside class="sidebar" id="sidebar"><div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">?</button></div>
             <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html" class="nav-item active"><i class="fas fa-chart-line"></i><span>لوحة التحكم</span></a>
@@ -434,7 +434,7 @@
             const lowStock = allProducts.filter(p => p.quantity <= p.minStock);
             
             if (lowStock.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">✅ لا توجد منتجات منخفضة المخزون</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">? لا توجد منتجات منخفضة المخزون</td></tr>';
                 return;
             }
             
@@ -462,7 +462,7 @@
             const expired = allProducts.filter(p => p.expiryDate && new Date(p.expiryDate) < new Date());
             
             if (expired.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">✅ لا توجد منتجات منتهية الصلاحية</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">? لا توجد منتجات منتهية الصلاحية</td></tr>';
                 return;
             }
             

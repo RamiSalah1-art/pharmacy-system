@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +6,7 @@
     <title>نقطة البيع - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -267,7 +268,11 @@
 <body>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header"><i class="fas fa-hospital-user"></i><h3>نظام الصيدلية</h3></div>
+            <div class="sidebar-header">
+                <img id="sidebarLogo" src="" alt="الشعار" style="max-width: 60px; max-height: 60px; display: none; margin-bottom: 5px;">
+                <i class="fas fa-hospital-user"></i>
+                <h3 id="pharmacyNameHeader">نظام الصيدلية</h3>
+            </div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html"><i class="fas fa-chart-line"></i> لوحة التحكم</a>
                 <a href="inventory.html"><i class="fas fa-boxes"></i> المخزون</a>
@@ -281,7 +286,7 @@
         </aside>
         <main class="main-content">
             <header class="top-bar">
-                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <button class="menu-toggle" onclick="toggleSidebar()"></button>
                 <div><span id="userName"></span> <i class="fas fa-user-circle"></i></div>
             </header>
             <div class="content-wrapper">
@@ -290,7 +295,7 @@
                         <div class="search-bar">
                             <div class="search-input-wrapper">
                                 <input type="text" id="searchInput" placeholder="بحث بالاسم أو الباركود">
-                                <button class="search-clear" id="clearSearchBtn" style="display: none;">✕</button>
+                                <button class="search-clear" id="clearSearchBtn" style="display: none;"></button>
                             </div>
                             <div class="search-type">
                                 <button class="search-type-btn active" data-type="all">الكل</button>
@@ -301,7 +306,7 @@
                         <div class="product-grid" id="productGrid"></div>
                     </div>
                     <div class="cart-section">
-                        <h3>🛒 سلة المشتريات</h3>
+                        <h3> سلة المشتريات</h3>
                         <div class="cart-items" id="cartItems"></div>
                         <div class="cart-total" id="cartTotal" style="display: none;">
                             <div><strong>الإجمالي: <span id="cartTotalAmount">0</span> ج.س</strong></div>
@@ -317,40 +322,40 @@
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>💰 إتمام عملية البيع</h3>
+                <h3> إتمام عملية البيع</h3>
                 <button onclick="closePaymentModal()" style="background:none;border:none;color:white;font-size:24px;">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>👤 اختيار العميل</label>
+                    <label> اختيار العميل</label>
                     <select id="customerSelect">
-                        <option value="cash">🔄 نقدي (بدون عميل)</option>
+                        <option value="cash"> نقدي (بدون عميل)</option>
                     </select>
                     <button class="btn-add-customer" onclick="openAddCustomerModal()">+ إضافة عميل جديد</button>
                 </div>
                 <div class="form-group">
-                    <label>💳 طريقة الدفع</label>
+                    <label> طريقة الدفع</label>
                     <div class="payment-methods">
-                        <div class="payment-method" data-method="cash">💰 نقدي</div>
-                        <div class="payment-method" data-method="bank">🏦 تحويل بنكي</div>
+                        <div class="payment-method" data-method="cash"> نقدي</div>
+                        <div class="payment-method" data-method="bank"> تحويل بنكي</div>
                     </div>
                 </div>
                 <div id="bankDetails" style="display: none;">
                     <div class="form-group">
-                        <label>🏦 اسم البنك</label>
+                        <label> اسم البنك</label>
                         <input type="text" id="bankName" placeholder="مثال: بنك الخرطوم">
                     </div>
                     <div class="form-group">
-                        <label>📝 رقم الحوالة</label>
+                        <label> رقم الحوالة</label>
                         <input type="text" id="transferNumber" placeholder="أدخل رقم الحوالة">
                     </div>
                     <div class="form-group">
-                        <label>👤 اسم المحول</label>
+                        <label> اسم المحول</label>
                         <input type="text" id="transferName" placeholder="اسم الشخص المحول">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>📝 ملاحظات</label>
+                    <label> ملاحظات</label>
                     <input type="text" id="paymentNotes" placeholder="ملاحظات إضافية">
                 </div>
                 <div class="invoice-summary" style="background:#f8f9fa;padding:12px;border-radius:8px;">
@@ -369,7 +374,7 @@
     <div id="addCustomerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>➕ إضافة عميل جديد</h3>
+                <h3>? إضافة عميل جديد</h3>
                 <button onclick="closeAddCustomerModal()" style="background:none;border:none;color:white;font-size:24px;">&times;</button>
             </div>
             <div class="modal-body">
@@ -400,6 +405,41 @@
         let searchType = 'all';
         let selectedPaymentMethod = 'cash';
 
+        function loadCompanyInfo() {
+            const savedLogo = localStorage.getItem('pharmacyLogo');
+            if (savedLogo) {
+                const sidebarLogo = document.getElementById('sidebarLogo');
+                if (sidebarLogo) {
+                    sidebarLogo.src = savedLogo;
+                    sidebarLogo.style.display = 'block';
+                }
+            }
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            if (settings.pharmacyName) {
+                document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName;
+            }
+        }
+
+        function getCompanyData() {
+            const savedData = localStorage.getItem('companyData');
+            if (savedData) {
+                return JSON.parse(savedData);
+            }
+            return { pharmacyName: '', commercialRegister: '', taxNumber: '', phone: '', email: '', address: '', website: '' };
+        }
+
+        function formatQRText() {
+            const data = getCompanyData();
+            let parts = [];
+            if (data.pharmacyName) parts.push(data.pharmacyName);
+            if (data.commercialRegister) parts.push(`سجل:${data.commercialRegister}`);
+            if (data.taxNumber) parts.push(`ضريبي:${data.taxNumber}`);
+            if (data.phone) parts.push(data.phone);
+            if (data.address) parts.push(data.address);
+            if (parts.length === 0) return 'بيانات الصيدلية';
+            return parts.join(' - ');
+        }
+
         function loadProducts() {
             const stored = localStorage.getItem('products');
             if (stored) products = JSON.parse(stored);
@@ -415,7 +455,7 @@
                 else if (searchType === 'barcode') filtered = products.filter(p => p.barcode && p.barcode.toLowerCase().includes(searchTerm.toLowerCase()));
                 else filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.barcode && p.barcode.toLowerCase().includes(searchTerm.toLowerCase())));
             }
-            if (filtered.length === 0) { grid.innerHTML = '<div style="text-align:center;padding:40px;">🔍 لا توجد منتجات</div>'; return; }
+            if (filtered.length === 0) { grid.innerHTML = '<div style="text-align:center;padding:40px;"> لا توجد منتجات</div>'; return; }
             let html = '';
             filtered.forEach(p => {
                 html += `<div class="product-card" onclick="addToCart(${p.id})"><div class="product-name">${p.name}</div><div class="product-price">${p.sellingPrice} ج.س</div><div class="product-stock">المتبقي: ${p.quantity}</div></div>`;
@@ -425,10 +465,10 @@
 
         function addToCart(id) {
             const product = products.find(p => p.id === id);
-            if (!product || product.quantity <= 0) { alert('⚠️ المنتج غير متوفر'); return; }
+            if (!product || product.quantity <= 0) { alert(' المنتج غير متوفر'); return; }
             const existing = cart.find(item => item.id === id);
             if (existing) {
-                if (existing.quantity + 1 > product.quantity) { alert('⚠️ الكمية غير متوفرة'); return; }
+                if (existing.quantity + 1 > product.quantity) { alert(' الكمية غير متوفرة'); return; }
                 existing.quantity++;
             } else {
                 cart.push({ id: product.id, name: product.name, price: product.sellingPrice, quantity: 1 });
@@ -439,13 +479,13 @@
         function updateCart() {
             const cartDiv = document.getElementById('cartItems');
             const totalDiv = document.getElementById('cartTotal');
-            if (cart.length === 0) { cartDiv.innerHTML = '<div style="text-align:center;padding:40px;">🛒 السلة فارغة</div>'; totalDiv.style.display = 'none'; return; }
+            if (cart.length === 0) { cartDiv.innerHTML = '<div style="text-align:center;padding:40px;"> السلة فارغة</div>'; totalDiv.style.display = 'none'; return; }
             let total = 0;
             let html = '';
             cart.forEach((item, idx) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
-                html += `<div class="cart-item"><div><strong>${item.name}</strong><br>${item.quantity} × ${item.price} ج.س</div><div>${itemTotal} ج.س</div><div class="cart-item-actions"><button onclick="updateQuantity(${idx}, ${item.quantity - 1})">-</button><button onclick="updateQuantity(${idx}, ${item.quantity + 1})">+</button><button onclick="removeFromCart(${idx})">🗑️</button></div></div>`;
+                html += `<div class="cart-item"><div><strong>${item.name}</strong><br>${item.quantity} × ${item.price} ج.س</div><div>${itemTotal} ج.س</div><div class="cart-item-actions"><button onclick="updateQuantity(${idx}, ${item.quantity - 1})">-</button><button onclick="updateQuantity(${idx}, ${item.quantity + 1})">+</button><button onclick="removeFromCart(${idx})"></button></div></div>`;
             });
             cartDiv.innerHTML = html;
             totalDiv.style.display = 'block';
@@ -455,7 +495,7 @@
         function updateQuantity(idx, newQty) {
             if (newQty <= 0) { removeFromCart(idx); return; }
             const product = products.find(p => p.id === cart[idx].id);
-            if (newQty > product.quantity) { alert('⚠️ الكمية غير متوفرة'); return; }
+            if (newQty > product.quantity) { alert(' الكمية غير متوفرة'); return; }
             cart[idx].quantity = newQty;
             updateCart();
         }
@@ -463,7 +503,7 @@
         function removeFromCart(idx) { cart.splice(idx, 1); updateCart(); }
 
         function openPaymentModal() {
-            if (cart.length === 0) { alert('⚠️ السلة فارغة'); return; }
+            if (cart.length === 0) { alert('?? السلة فارغة'); return; }
             const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             document.getElementById('summaryItemCount').innerHTML = cart.length;
             document.getElementById('summaryTotal').innerHTML = total + ' ج.س';
@@ -474,8 +514,8 @@
         function loadCustomersToSelect() {
             const customers = JSON.parse(localStorage.getItem('customers') || '[]');
             const select = document.getElementById('customerSelect');
-            select.innerHTML = '<option value="cash">🔄 نقدي (بدون عميل)</option>';
-            customers.forEach(c => { select.innerHTML += `<option value="${c.id}">👤 ${c.name}</option>`; });
+            select.innerHTML = '<option value="cash"> نقدي (بدون عميل)</option>';
+            customers.forEach(c => { select.innerHTML += `<option value="${c.id}">?? ${c.name}</option>`; });
         }
 
         function openAddCustomerModal() { document.getElementById('addCustomerModal').classList.add('active'); }
@@ -483,7 +523,7 @@
 
         function saveNewCustomer() {
             const name = document.getElementById('newCustomerName').value.trim();
-            if (!name) { alert('⚠️ اسم العميل مطلوب'); return; }
+            if (!name) { alert('?? اسم العميل مطلوب'); return; }
             const phone = document.getElementById('newCustomerPhone').value;
             const email = document.getElementById('newCustomerEmail').value;
             const customers = JSON.parse(localStorage.getItem('customers') || '[]');
@@ -493,22 +533,10 @@
             closeAddCustomerModal();
             loadCustomersToSelect();
             document.getElementById('customerSelect').value = newId;
-            alert('✅ تم إضافة العميل بنجاح');
+            alert(' تم إضافة العميل بنجاح');
         }
 
-                function printCurrentInvoice() {
-            const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-            if (cart.length === 0) { alert("⚠️ لا توجد فواتير للطباعة"); return; }
-            const invoice = {
-                number: "INV-" + Date.now(),
-                customerName: document.getElementById('customerSelect').value === 'cash' ? 'نقدي' : 'عميل',
-                items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, total: i.price * i.quantity })),
-                total: total,
-                date: new Date().toISOString(),
-                paymentMethod: selectedPaymentMethod === 'cash' ? 'نقدي' : 'تحويل بنكي'
-            };
-            printInvoice(invoice);
-        } function completeSale() {
+        function completeSale() {
             const customerValue = document.getElementById('customerSelect').value;
             let customerName = 'نقدي';
             let customerId = null;
@@ -526,7 +554,7 @@
                 const bankName = document.getElementById('bankName').value.trim();
                 const transferNumber = document.getElementById('transferNumber').value.trim();
                 const transferName = document.getElementById('transferName').value.trim();
-                if (!bankName || !transferNumber || !transferName) { alert('⚠️ يرجى إكمال بيانات التحويل البنكي'); return; }
+                if (!bankName || !transferNumber || !transferName) { alert(' يرجى إكمال بيانات التحويل البنكي'); return; }
                 paymentMethod = 'تحويل بنكي';
                 paymentDetails = { bankName, transferNumber, transferName };
             }
@@ -558,15 +586,199 @@
             };
             invoices.push(newInvoice);
             localStorage.setItem('invoices', JSON.stringify(invoices));
-            if(confirm("🖨️ هل تريد طباعة الفاتورة؟")) { printInvoice(newInvoice); } alert(`✅ تم إتمام البيع\nرقم الفاتورة: ${newInvoice.number}\nالمبلغ: ${total} ج.س`);
+            if(confirm(" هل تريد طباعة الفاتورة؟")) { printInvoice(newInvoice); } 
+            alert(` تم إتمام البيع\nرقم الفاتورة: ${newInvoice.number}\nالمبلغ: ${total} ج.س`);
             cart = [];
             updateCart();
             loadProducts();
             closePaymentModal();
         }
 
-        function closePaymentModal() { document.getElementById('paymentModal').classList.remove('active'); }
+        function printInvoice(invoice) {
+            const companyData = getCompanyData();
+            const savedLogo = localStorage.getItem('pharmacyLogo');
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            const currencySymbol = settings.currencySymbol || 'ج.س';
+            const date = new Date(invoice.date);
+            const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+            
+            // شعار أكبر وأوضح
+            let logoHtml = '';
+            if (savedLogo) {
+                logoHtml = `<img src="${savedLogo}" style="max-width: 150px; max-height: 100px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">`;
+            }
+            
+            // بيانات الشركة من غير تكرار
+            let companyInfoHtml = '';
+            if (companyData.commercialRegister) companyInfoHtml += `سجل تجاري: ${companyData.commercialRegister} `;
+            if (companyData.taxNumber) companyInfoHtml += `| رقم ضريبي: ${companyData.taxNumber}<br>`;
+            if (companyData.phone) companyInfoHtml += `${companyData.phone}<br>`;
+            if (companyData.address) companyInfoHtml += `${companyData.address}`;
+            
+            const qrTextShort = formatQRText();
+            
+            let itemsHtml = '';
+            invoice.items.forEach(item => {
+                itemsHtml += `<tr>
+                    <td style="padding:10px;border:1px solid #ddd;text-align:right;">${item.name}</td>
+                    <td style="padding:10px;border:1px solid #ddd;text-align:center;">${item.quantity}</td>
+                    <td style="padding:10px;border:1px solid #ddd;text-align:center;">${item.price.toFixed(2)} ${currencySymbol}</td>
+                    <td style="padding:10px;border:1px solid #ddd;text-align:center;">${(item.price * item.quantity).toFixed(2)} ${currencySymbol}</td>
+                </tr>`;
+            });
+            
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>فاتورة ${invoice.number}</title>
+                    <meta charset="UTF-8">
+                    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            font-family: 'Cairo', 'Tahoma', sans-serif;
+                            padding: 20px;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            background: white;
+                        }
+                        .invoice-container {
+                            border: 1px solid #e0e0e0;
+                            padding: 25px;
+                            border-radius: 12px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                        }
+                        .header {
+                            text-align: center;
+                            border-bottom: 2px solid #2c7da0;
+                            padding-bottom: 15px;
+                            margin-bottom: 20px;
+                        }
+                        .company-info {
+                            font-size: 13px;
+                            color: #2c3e50;
+                            margin-top: 8px;
+                            line-height: 1.6;
+                        }
+                        .invoice-title {
+                            font-size: 20px;
+                            font-weight: bold;
+                            margin: 12px 0 5px;
+                            color: #2c7da0;
+                        }
+                        .info-row {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 10px;
+                            flex-wrap: wrap;
+                            background: #f8f9fa;
+                            padding: 10px;
+                            border-radius: 8px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin: 15px 0;
+                        }
+                        th {
+                            background: #2c7da0;
+                            color: white;
+                            padding: 10px;
+                            text-align: center;
+                            font-weight: 600;
+                        }
+                        td {
+                            padding: 10px;
+                            text-align: center;
+                            border-bottom: 1px solid #e0e0e0;
+                        }
+                        .total {
+                            font-size: 18px;
+                            font-weight: bold;
+                            text-align: left;
+                            margin-top: 15px;
+                            padding-top: 10px;
+                            border-top: 2px solid #2c7da0;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 25px;
+                            font-size: 12px;
+                            color: #7f8c8d;
+                            padding-top: 15px;
+                            border-top: 1px solid #ddd;
+                        }
+                        .qr-code-section {
+                            display: flex;
+                            justify-content: center;
+                            margin: 20px 0 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="invoice-container">
+                        <div class="header">
+                            ${logoHtml}
+                            <div class="company-info">${companyInfoHtml}</div>
+                            <div class="invoice-title">فاتورة شراء</div>
+                        </div>
+                        
+                        <!-- تم إخفاء رقم الفاتورة والتاريخ حسب طلبك -->
+                        <div class="info-row">
+                            <div><strong>العميل:</strong> ${invoice.customerName}</div>
+                            <div><strong>طريقة الدفع:</strong> ${invoice.paymentMethod}</div>
+                        </div>
+                        
+                        <table>
+                            <thead>
+                                <tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                        
+                        <div class="total">الإجمالي: ${invoice.total.toFixed(2)} ${currencySymbol}</div>
+                        
+                        <div class="qr-code-section" id="printQRCode"></div>
+                        
+                        <div class="footer">
+                            ${companyData.pharmacyName || 'نظام الصيدليات'} - شكراً لثقتكم
+                        </div>
+                    </div>
+                    <script>
+                        (function() {
+                            try {
+                                const qrText = ${JSON.stringify(qrTextShort)};
+                                const qrContainer = document.getElementById('printQRCode');
+                                if (qrContainer && qrText && qrText !== 'بيانات الصيدلية' && qrText.length > 0 && qrText.length < 800) {
+                                    new QRCode(qrContainer, {
+                                        text: qrText,
+                                        width: 160,
+                                        height: 160,
+                                        colorDark: "#000000",
+                                        colorLight: "#ffffff",
+                                        correctLevel: QRCode.CorrectLevel.M
+                                    });
+                                } else if (qrContainer) {
+                                    qrContainer.innerHTML = '<div style="font-size:14px;color:#2c7da0;">?? ${companyData.pharmacyName || ''}</div>';
+                                }
+                            } catch(e) {
+                                console.log('QR Error:', e);
+                                const qrContainer = document.getElementById('printQRCode');
+                                if (qrContainer) qrContainer.innerHTML = '<div style="font-size:14px;color:#2c7da0;">?? ${companyData.pharmacyName || ''}</div>';
+                            }
+                        })();
+                    <\/script>
+                </body>
+                </html>
+            `);
+            win.document.close();
+            setTimeout(() => { win.print(); }, 500);
+        }
 
+        function closePaymentModal() { document.getElementById('paymentModal').classList.remove('active'); }
         function handleSearch() {
             searchTerm = document.getElementById('searchInput').value.trim();
             document.getElementById('clearSearchBtn').style.display = searchTerm ? 'flex' : 'none';
@@ -595,59 +807,7 @@
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
         loadProducts();
-            function printInvoice(invoice) {
-            const win = window.open('', '_blank');
-            const date = new Date(invoice.date);
-            const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
-            let itemsHtml = '';
-            invoice.items.forEach(item => {
-                itemsHtml += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)} ج.س</td><td>${(item.price * item.quantity).toFixed(2)} ج.س</td></tr>`;
-            });
-            win.document.write(`
-                <html dir="rtl">
-                <head>
-                    <title>فاتورة ${invoice.number}</title>
-                    <meta charset="UTF-8">
-                    <style>
-                        body { font-family: 'Cairo', sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-                        .header { text-align: center; border-bottom: 2px solid #2c7da0; padding-bottom: 15px; margin-bottom: 20px; }
-                        .header h1 { color: #2c7da0; margin: 0; }
-                        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
-                        th { background: #f2f2f2; }
-                        .total { font-size: 18px; font-weight: bold; text-align: left; margin-top: 15px; }
-                        .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #7f8c8d; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>نظام إدارة الصيدليات</h1>
-                        <p>Pharmacy Management System</p>
-                    </div>
-                    <div><strong>رقم الفاتورة:</strong> ${invoice.number}</div>
-                    <div><strong>التاريخ:</strong> ${formattedDate}</div>
-                    <div><strong>العميل:</strong> ${invoice.customerName}</div>
-                    <div><strong>طريقة الدفع:</strong> ${invoice.paymentMethod}</div>
-                    <table>
-                        <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-                        <tbody>${itemsHtml}</tbody>
-                    </table>
-                    <div class="total">الإجمالي: ${invoice.total.toFixed(2)} ج.س</div>
-                    <div class="footer">شكراً لتعاملكم معنا</div>
-                </body>
-                </html>
-            `);
-            win.document.close();
-            win.print();
-        }
-</script>
+        loadCompanyInfo();
+    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
