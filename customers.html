@@ -200,7 +200,7 @@
     <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
-            <div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:white;">✕</button></div>
+            <div style="text-align:left; padding:10px;"><button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#2c7da0;">✕</button></div>
             <div class="sidebar-header">
                 <img id="sidebarLogo" src="" alt="الشعار" style="max-width: 60px; max-height: 60px; display: none; margin-bottom: 5px;">
                 <i class="fas fa-hospital-user"></i>
@@ -263,9 +263,6 @@
                 if (sidebarLogo) {
                     sidebarLogo.src = savedLogo;
                     sidebarLogo.style.display = 'block';
-                    // إخفاء الأيقونة إذا وجد شعار
-                    const icon = sidebarLogo.nextElementSibling;
-                    if (icon && icon.tagName === 'I') icon.style.display = 'none';
                 }
             }
             const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
@@ -274,16 +271,13 @@
             }
         }
 
+        // تم تعديل هذه الدالة - إزالة البيانات التجريبية
         function loadCustomers() {
             const stored = localStorage.getItem('customers');
             if (stored) {
                 customers = JSON.parse(stored);
             } else {
-                customers = [
-                    { id: 1, name: "أحمد محمد", phone: "0123456789", email: "ahmed@email.com", address: "الرياض", totalSpent: 1250 },
-                    { id: 2, name: "سارة علي", phone: "0112345678", email: "sara@email.com", address: "جدة", totalSpent: 890 },
-                    { id: 3, name: "محمد عبدالله", phone: "0561234567", email: "mohammed@email.com", address: "الدمام", totalSpent: 2340 }
-                ];
+                customers = [];
                 localStorage.setItem('customers', JSON.stringify(customers));
             }
             displayCustomers();
