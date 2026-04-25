@@ -85,6 +85,79 @@ function formatDate(dateString) {
     }
 }
 
+// ===== دالة مزامنة اسم الصيدلية من Firebase =====
+async function syncPharmacyNameFromFirebase() {
+    // التأكد من وجود Firebase و auth
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+        console.log('Firebase not loaded yet');
+        return;
+    }
+    
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        console.log('No user logged in');
+        return;
+    }
+    
+    try {
+        const db = firebase.firestore();
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        
+        if (userDoc.exists && userDoc.data().pharmacyId) {
+            const pharmacyDoc = await db.collection('pharmacies').doc(userDoc.data().pharmacyId).get();
+            if (pharmacyDoc.exists) {
+                const pharmacyName = pharmacyDoc.data().name || 'نظام الصيدلية';
+                
+                // حفظ في localStorage بشكل موحد
+                const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+                settings.pharmacyName = pharmacyName;
+                localStorage.setItem('pharmacySettings', JSON.stringify(settings));
+                
+                const companyData = JSON.parse(localStorage.getItem('companyData') || '{}');
+                companyData.pharmacyName = pharmacyName;
+                localStorage.setItem('companyData', JSON.stringify(companyData));
+                
+                console.log('✅ تم مزامنة اسم الصيدلية من Firebase:', pharmacyName);
+                
+                // تحديث الواجهة
+                updatePharmacyNameDisplay(pharmacyName);
+                return pharmacyName;
+            }
+        }
+    } catch(e) {
+        console.error('خطأ في مزامنة اسم الصيدلية:', e);
+    }
+    return null;
+}
+
+// دالة تحديث عرض اسم الصيدلية في الواجهة
+function updatePharmacyNameDisplay(pharmacyName) {
+    if (!pharmacyName) {
+        const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+        pharmacyName = settings.pharmacyName || 'نظام الصيدلية';
+    }
+    
+    // تحديث كل العناصر الممكنة
+    const elements = document.querySelectorAll('#pharmacyNameHeader, .pharmacy-name, .sidebar-header h3');
+    elements.forEach(el => {
+        if (el) el.innerHTML = pharmacyName;
+    });
+}
+
+// دالة تحديث اسم الصيدلية من localStorage (للاستخدام عند عدم وجود Firebase)
+function updatePharmacyNameFromLocal() {
+    const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+    let pharmacyName = settings.pharmacyName || '';
+    
+    if (!pharmacyName) {
+        const companyData = JSON.parse(localStorage.getItem('companyData') || '{}');
+        pharmacyName = companyData.pharmacyName || 'نظام الصيدلية';
+    }
+    
+    updatePharmacyNameDisplay(pharmacyName);
+    return pharmacyName;
+}
+
 // دوال مساعدة
 function toggleSidebar() {
     document.getElementById('sidebar')?.classList.toggle('collapsed');
@@ -109,16 +182,34 @@ document.head.appendChild(style);
 document.addEventListener('DOMContentLoaded', function() {
     initData();
     
-    // تحديث اسم الصيدلية
-    const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
-    const pharmacyNameElements = document.querySelectorAll('.pharmacy-name, .sidebar-header h3');
-    pharmacyNameElements.forEach(el => {
-        if (el && settings.pharmacyName) el.innerHTML = settings.pharmacyName;
-    });
-    
     // عرض اسم المستخدم
     const userNameSpan = document.getElementById('user-name');
     if (userNameSpan) {
         userNameSpan.innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
     }
+    
+    // محاولة مزامنة اسم الصيدلية من Firebase أولاً
+    if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+        syncPharmacyNameFromFirebase().then(() => {
+            // إذا نجحت المزامنة، نعرض الاسم
+            updatePharmacyNameFromLocal();
+        }).catch(() => {
+            // إذا فشلت، نعرض من localStorage
+            updatePharmacyNameFromLocal();
+        });
+    } else {
+        // إذا لم يكن هناك Firebase، نعرض من localStorage
+        updatePharmacyNameFromLocal();
+    }
 });
+
+// استماع لتغير حالة تسجيل الدخول في Firebase
+if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            syncPharmacyNameFromFirebase();
+        } else {
+            updatePharmacyNameFromLocal();
+        }
+    });
+}
