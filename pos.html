@@ -6,7 +6,8 @@
     <title>نقطة البيع - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- استخدام مكتبة QRCode مختلفة وأكثر استقراراً -->
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -286,7 +287,7 @@
         </aside>
         <main class="main-content">
             <header class="top-bar">
-                <button class="menu-toggle" onclick="toggleSidebar()"></button>
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
                 <div><span id="userName"></span> <i class="fas fa-user-circle"></i></div>
             </header>
             <div class="content-wrapper">
@@ -295,7 +296,7 @@
                         <div class="search-bar">
                             <div class="search-input-wrapper">
                                 <input type="text" id="searchInput" placeholder="بحث بالاسم أو الباركود">
-                                <button class="search-clear" id="clearSearchBtn" style="display: none;"></button>
+                                <button class="search-clear" id="clearSearchBtn" style="display: none;">✕</button>
                             </div>
                             <div class="search-type">
                                 <button class="search-type-btn active" data-type="all">الكل</button>
@@ -306,7 +307,7 @@
                         <div class="product-grid" id="productGrid"></div>
                     </div>
                     <div class="cart-section">
-                        <h3> سلة المشتريات</h3>
+                        <h3>🛒 سلة المشتريات</h3>
                         <div class="cart-items" id="cartItems"></div>
                         <div class="cart-total" id="cartTotal" style="display: none;">
                             <div><strong>الإجمالي: <span id="cartTotalAmount">0</span> ج.س</strong></div>
@@ -322,40 +323,40 @@
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3> إتمام عملية البيع</h3>
+                <h3>💰 إتمام عملية البيع</h3>
                 <button onclick="closePaymentModal()" style="background:none;border:none;color:white;font-size:24px;">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label> اختيار العميل</label>
+                    <label>👤 اختيار العميل</label>
                     <select id="customerSelect">
-                        <option value="cash"> نقدي (بدون عميل)</option>
+                        <option value="cash">🔄 نقدي (بدون عميل)</option>
                     </select>
                     <button class="btn-add-customer" onclick="openAddCustomerModal()">+ إضافة عميل جديد</button>
                 </div>
                 <div class="form-group">
-                    <label> طريقة الدفع</label>
+                    <label>💳 طريقة الدفع</label>
                     <div class="payment-methods">
-                        <div class="payment-method" data-method="cash"> نقدي</div>
-                        <div class="payment-method" data-method="bank"> تحويل بنكي</div>
+                        <div class="payment-method" data-method="cash">💰 نقدي</div>
+                        <div class="payment-method" data-method="bank">🏦 تحويل بنكي</div>
                     </div>
                 </div>
                 <div id="bankDetails" style="display: none;">
                     <div class="form-group">
-                        <label> اسم البنك</label>
+                        <label>🏦 اسم البنك</label>
                         <input type="text" id="bankName" placeholder="مثال: بنك الخرطوم">
                     </div>
                     <div class="form-group">
-                        <label> رقم الحوالة</label>
+                        <label>📝 رقم الحوالة</label>
                         <input type="text" id="transferNumber" placeholder="أدخل رقم الحوالة">
                     </div>
                     <div class="form-group">
-                        <label> اسم المحول</label>
+                        <label>👤 اسم المحول</label>
                         <input type="text" id="transferName" placeholder="اسم الشخص المحول">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label> ملاحظات</label>
+                    <label>📝 ملاحظات</label>
                     <input type="text" id="paymentNotes" placeholder="ملاحظات إضافية">
                 </div>
                 <div class="invoice-summary" style="background:#f8f9fa;padding:12px;border-radius:8px;">
@@ -374,7 +375,7 @@
     <div id="addCustomerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>? إضافة عميل جديد</h3>
+                <h3>➕ إضافة عميل جديد</h3>
                 <button onclick="closeAddCustomerModal()" style="background:none;border:none;color:white;font-size:24px;">&times;</button>
             </div>
             <div class="modal-body">
@@ -455,7 +456,7 @@
                 else if (searchType === 'barcode') filtered = products.filter(p => p.barcode && p.barcode.toLowerCase().includes(searchTerm.toLowerCase()));
                 else filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.barcode && p.barcode.toLowerCase().includes(searchTerm.toLowerCase())));
             }
-            if (filtered.length === 0) { grid.innerHTML = '<div style="text-align:center;padding:40px;"> لا توجد منتجات</div>'; return; }
+            if (filtered.length === 0) { grid.innerHTML = '<div style="text-align:center;padding:40px;">🔍 لا توجد منتجات</div>'; return; }
             let html = '';
             filtered.forEach(p => {
                 html += `<div class="product-card" onclick="addToCart(${p.id})"><div class="product-name">${p.name}</div><div class="product-price">${p.sellingPrice} ج.س</div><div class="product-stock">المتبقي: ${p.quantity}</div></div>`;
@@ -465,10 +466,10 @@
 
         function addToCart(id) {
             const product = products.find(p => p.id === id);
-            if (!product || product.quantity <= 0) { alert(' المنتج غير متوفر'); return; }
+            if (!product || product.quantity <= 0) { alert('⚠️ المنتج غير متوفر'); return; }
             const existing = cart.find(item => item.id === id);
             if (existing) {
-                if (existing.quantity + 1 > product.quantity) { alert(' الكمية غير متوفرة'); return; }
+                if (existing.quantity + 1 > product.quantity) { alert('⚠️ الكمية غير متوفرة'); return; }
                 existing.quantity++;
             } else {
                 cart.push({ id: product.id, name: product.name, price: product.sellingPrice, quantity: 1 });
@@ -479,13 +480,13 @@
         function updateCart() {
             const cartDiv = document.getElementById('cartItems');
             const totalDiv = document.getElementById('cartTotal');
-            if (cart.length === 0) { cartDiv.innerHTML = '<div style="text-align:center;padding:40px;"> السلة فارغة</div>'; totalDiv.style.display = 'none'; return; }
+            if (cart.length === 0) { cartDiv.innerHTML = '<div style="text-align:center;padding:40px;">🛒 السلة فارغة</div>'; totalDiv.style.display = 'none'; return; }
             let total = 0;
             let html = '';
             cart.forEach((item, idx) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
-                html += `<div class="cart-item"><div><strong>${item.name}</strong><br>${item.quantity} × ${item.price} ج.س</div><div>${itemTotal} ج.س</div><div class="cart-item-actions"><button onclick="updateQuantity(${idx}, ${item.quantity - 1})">-</button><button onclick="updateQuantity(${idx}, ${item.quantity + 1})">+</button><button onclick="removeFromCart(${idx})"></button></div></div>`;
+                html += `<div class="cart-item"><div><strong>${item.name}</strong><br>${item.quantity} × ${item.price} ج.س</div><div>${itemTotal} ج.س</div><div class="cart-item-actions"><button onclick="updateQuantity(${idx}, ${item.quantity - 1})">-</button><button onclick="updateQuantity(${idx}, ${item.quantity + 1})">+</button><button onclick="removeFromCart(${idx})">🗑️</button></div></div>`;
             });
             cartDiv.innerHTML = html;
             totalDiv.style.display = 'block';
@@ -495,7 +496,7 @@
         function updateQuantity(idx, newQty) {
             if (newQty <= 0) { removeFromCart(idx); return; }
             const product = products.find(p => p.id === cart[idx].id);
-            if (newQty > product.quantity) { alert(' الكمية غير متوفرة'); return; }
+            if (newQty > product.quantity) { alert('⚠️ الكمية غير متوفرة'); return; }
             cart[idx].quantity = newQty;
             updateCart();
         }
@@ -503,7 +504,7 @@
         function removeFromCart(idx) { cart.splice(idx, 1); updateCart(); }
 
         function openPaymentModal() {
-            if (cart.length === 0) { alert('?? السلة فارغة'); return; }
+            if (cart.length === 0) { alert('⚠️ السلة فارغة'); return; }
             const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             document.getElementById('summaryItemCount').innerHTML = cart.length;
             document.getElementById('summaryTotal').innerHTML = total + ' ج.س';
@@ -514,8 +515,8 @@
         function loadCustomersToSelect() {
             const customers = JSON.parse(localStorage.getItem('customers') || '[]');
             const select = document.getElementById('customerSelect');
-            select.innerHTML = '<option value="cash"> نقدي (بدون عميل)</option>';
-            customers.forEach(c => { select.innerHTML += `<option value="${c.id}">?? ${c.name}</option>`; });
+            select.innerHTML = '<option value="cash">🔄 نقدي (بدون عميل)</option>';
+            customers.forEach(c => { select.innerHTML += `<option value="${c.id}">👤 ${c.name}</option>`; });
         }
 
         function openAddCustomerModal() { document.getElementById('addCustomerModal').classList.add('active'); }
@@ -523,7 +524,7 @@
 
         function saveNewCustomer() {
             const name = document.getElementById('newCustomerName').value.trim();
-            if (!name) { alert('?? اسم العميل مطلوب'); return; }
+            if (!name) { alert('⚠️ اسم العميل مطلوب'); return; }
             const phone = document.getElementById('newCustomerPhone').value;
             const email = document.getElementById('newCustomerEmail').value;
             const customers = JSON.parse(localStorage.getItem('customers') || '[]');
@@ -533,7 +534,7 @@
             closeAddCustomerModal();
             loadCustomersToSelect();
             document.getElementById('customerSelect').value = newId;
-            alert(' تم إضافة العميل بنجاح');
+            alert('✅ تم إضافة العميل بنجاح');
         }
 
         function completeSale() {
@@ -554,7 +555,7 @@
                 const bankName = document.getElementById('bankName').value.trim();
                 const transferNumber = document.getElementById('transferNumber').value.trim();
                 const transferName = document.getElementById('transferName').value.trim();
-                if (!bankName || !transferNumber || !transferName) { alert(' يرجى إكمال بيانات التحويل البنكي'); return; }
+                if (!bankName || !transferNumber || !transferName) { alert('⚠️ يرجى إكمال بيانات التحويل البنكي'); return; }
                 paymentMethod = 'تحويل بنكي';
                 paymentDetails = { bankName, transferNumber, transferName };
             }
@@ -586,8 +587,8 @@
             };
             invoices.push(newInvoice);
             localStorage.setItem('invoices', JSON.stringify(invoices));
-            if(confirm(" هل تريد طباعة الفاتورة؟")) { printInvoice(newInvoice); } 
-            alert(` تم إتمام البيع\nرقم الفاتورة: ${newInvoice.number}\nالمبلغ: ${total} ج.س`);
+            if(confirm("🖨️ هل تريد طباعة الفاتورة؟")) { printInvoice(newInvoice); } 
+            alert(`✅ تم إتمام البيع\nرقم الفاتورة: ${newInvoice.number}\nالمبلغ: ${total} ج.س`);
             cart = [];
             updateCart();
             loadProducts();
@@ -600,30 +601,30 @@
             const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
             const currencySymbol = settings.currencySymbol || 'ج.س';
             const date = new Date(invoice.date);
-            const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+            const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
+            const formattedTime = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
             
-            // شعار أكبر وأوضح
             let logoHtml = '';
             if (savedLogo) {
-                logoHtml = `<img src="${savedLogo}" style="max-width: 150px; max-height: 100px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">`;
+                logoHtml = `<img src="${savedLogo}" style="max-width: 100px; max-height: 70px; margin-bottom: 8px;">`;
             }
             
-            // بيانات الشركة من غير تكرار
             let companyInfoHtml = '';
-            if (companyData.commercialRegister) companyInfoHtml += `سجل تجاري: ${companyData.commercialRegister} `;
-            if (companyData.taxNumber) companyInfoHtml += `| رقم ضريبي: ${companyData.taxNumber}<br>`;
-            if (companyData.phone) companyInfoHtml += `${companyData.phone}<br>`;
-            if (companyData.address) companyInfoHtml += `${companyData.address}`;
+            if (companyData.pharmacyName) companyInfoHtml += `<h2 style="margin:0; font-size:16px; color:#2c7da0;">${companyData.pharmacyName}</h2>`;
+            if (companyData.commercialRegister) companyInfoHtml += `<div>سجل تجاري: ${companyData.commercialRegister}`;
+            if (companyData.taxNumber) companyInfoHtml += ` | رقم ضريبي: ${companyData.taxNumber}</div>`;
+            if (companyData.phone) companyInfoHtml += `<div>📞 ${companyData.phone}</div>`;
+            if (companyData.address) companyInfoHtml += `<div>📍 ${companyData.address}</div>`;
             
             const qrTextShort = formatQRText();
             
             let itemsHtml = '';
             invoice.items.forEach(item => {
                 itemsHtml += `<tr>
-                    <td style="padding:10px;border:1px solid #ddd;text-align:right;">${item.name}</td>
-                    <td style="padding:10px;border:1px solid #ddd;text-align:center;">${item.quantity}</td>
-                    <td style="padding:10px;border:1px solid #ddd;text-align:center;">${item.price.toFixed(2)} ${currencySymbol}</td>
-                    <td style="padding:10px;border:1px solid #ddd;text-align:center;">${(item.price * item.quantity).toFixed(2)} ${currencySymbol}</td>
+                    <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:right;">${item.name}</td>
+                    <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${item.quantity}</td>
+                    <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${item.price.toFixed(2)}</td>
+                    <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${(item.price * item.quantity).toFixed(2)}</td>
                 </tr>`;
             });
             
@@ -633,104 +634,118 @@
                 <head>
                     <title>فاتورة ${invoice.number}</title>
                     <meta charset="UTF-8">
-                    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script>
                     <style>
                         * { margin: 0; padding: 0; box-sizing: border-box; }
                         body {
                             font-family: 'Cairo', 'Tahoma', sans-serif;
-                            padding: 20px;
-                            max-width: 800px;
+                            background: #fff;
+                            padding: 15px;
+                            margin: 0;
+                        }
+                        .invoice-wrapper {
+                            max-width: 350px;
                             margin: 0 auto;
                             background: white;
                         }
-                        .invoice-container {
-                            border: 1px solid #e0e0e0;
-                            padding: 25px;
-                            border-radius: 12px;
-                            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-                        }
-                        .header {
+                        .invoice-header {
                             text-align: center;
-                            border-bottom: 2px solid #2c7da0;
-                            padding-bottom: 15px;
-                            margin-bottom: 20px;
+                            padding: 10px 0;
+                            border-bottom: 2px dashed #2c7da0;
+                            margin-bottom: 10px;
                         }
-                        .company-info {
-                            font-size: 13px;
-                            color: #2c3e50;
-                            margin-top: 8px;
-                            line-height: 1.6;
+                        .company-details {
+                            font-size: 11px;
+                            color: #555;
+                            line-height: 1.4;
+                            margin-top: 5px;
                         }
                         .invoice-title {
-                            font-size: 20px;
+                            font-size: 14px;
                             font-weight: bold;
-                            margin: 12px 0 5px;
+                            margin: 5px 0;
                             color: #2c7da0;
                         }
                         .info-row {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 10px;
-                            flex-wrap: wrap;
-                            background: #f8f9fa;
-                            padding: 10px;
-                            border-radius: 8px;
+                            font-size: 11px;
+                            margin-bottom: 5px;
+                            padding: 3px 0;
+                            border-bottom: 1px dotted #eee;
                         }
-                        table {
+                        .info-label {
+                            font-weight: bold;
+                            color: #2c3e50;
+                        }
+                        .items-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin: 15px 0;
+                            margin: 10px 0;
+                            font-size: 10px;
                         }
-                        th {
-                            background: #2c7da0;
-                            color: white;
-                            padding: 10px;
+                        .items-table th {
+                            background: #f8f9fa;
+                            padding: 5px 2px;
+                            border: 1px solid #dee2e6;
                             text-align: center;
-                            font-weight: 600;
-                        }
-                        td {
-                            padding: 10px;
-                            text-align: center;
-                            border-bottom: 1px solid #e0e0e0;
-                        }
-                        .total {
-                            font-size: 18px;
                             font-weight: bold;
-                            text-align: left;
-                            margin-top: 15px;
-                            padding-top: 10px;
+                        }
+                        .items-table td {
+                            padding: 5px 2px;
+                            border: 1px solid #dee2e6;
+                            text-align: center;
+                        }
+                        .total-row {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 6px 0;
+                            margin-top: 6px;
                             border-top: 2px solid #2c7da0;
+                            font-weight: bold;
+                            font-size: 13px;
+                        }
+                        .qr-section {
+                            text-align: center;
+                            margin: 10px 0;
+                            padding: 6px 0;
+                            min-height: 120px;
                         }
                         .footer {
                             text-align: center;
-                            margin-top: 25px;
-                            font-size: 12px;
-                            color: #7f8c8d;
-                            padding-top: 15px;
-                            border-top: 1px solid #ddd;
-                        }
-                        .qr-code-section {
-                            display: flex;
-                            justify-content: center;
-                            margin: 20px 0 10px;
+                            font-size: 9px;
+                            color: #888;
+                            margin-top: 10px;
+                            padding-top: 6px;
+                            border-top: 1px dashed #ddd;
                         }
                     </style>
                 </head>
                 <body>
-                    <div class="invoice-container">
-                        <div class="header">
+                    <div class="invoice-wrapper">
+                        <div class="invoice-header">
                             ${logoHtml}
-                            <div class="company-info">${companyInfoHtml}</div>
+                            <div class="company-details">${companyInfoHtml}</div>
                             <div class="invoice-title">فاتورة شراء</div>
                         </div>
                         
-                        <!-- تم إخفاء رقم الفاتورة والتاريخ حسب طلبك -->
                         <div class="info-row">
-                            <div><strong>العميل:</strong> ${invoice.customerName}</div>
-                            <div><strong>طريقة الدفع:</strong> ${invoice.paymentMethod}</div>
+                            <span class="info-label">رقم الفاتورة:</span>
+                            <span>${invoice.number}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">التاريخ:</span>
+                            <span>${formattedDate} - ${formattedTime}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">العميل:</span>
+                            <span>${invoice.customerName}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">طريقة الدفع:</span>
+                            <span>${invoice.paymentMethod}</span>
                         </div>
                         
-                        <table>
+                        <table class="items-table">
                             <thead>
                                 <tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>
                             </thead>
@@ -739,35 +754,60 @@
                             </tbody>
                         </table>
                         
-                        <div class="total">الإجمالي: ${invoice.total.toFixed(2)} ${currencySymbol}</div>
+                        <div class="total-row">
+                            <span>الإجمالي</span>
+                            <span>${invoice.total.toFixed(2)} ${currencySymbol}</span>
+                        </div>
                         
-                        <div class="qr-code-section" id="printQRCode"></div>
+                        <div id="printQRCode" class="qr-section"></div>
                         
                         <div class="footer">
-                            ${companyData.pharmacyName || 'نظام الصيدليات'} - شكراً لثقتكم
+                            ${companyData.pharmacyName || 'نظام الصيدليات'}<br>
+                            شكراً لثقتكم
                         </div>
                     </div>
+                    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"><\/script>
                     <script>
                         (function() {
-                            try {
-                                const qrText = ${JSON.stringify(qrTextShort)};
-                                const qrContainer = document.getElementById('printQRCode');
-                                if (qrContainer && qrText && qrText !== 'بيانات الصيدلية' && qrText.length > 0 && qrText.length < 800) {
-                                    new QRCode(qrContainer, {
-                                        text: qrText,
-                                        width: 160,
-                                        height: 160,
-                                        colorDark: "#000000",
-                                        colorLight: "#ffffff",
-                                        correctLevel: QRCode.CorrectLevel.M
-                                    });
-                                } else if (qrContainer) {
-                                    qrContainer.innerHTML = '<div style="font-size:14px;color:#2c7da0;">?? ${companyData.pharmacyName || ''}</div>';
+                            let attempts = 0;
+                            function generateQR() {
+                                var container = document.getElementById('printQRCode');
+                                if (!container && attempts < 15) {
+                                    attempts++;
+                                    setTimeout(generateQR, 150);
+                                    return;
                                 }
+<<<<<<< HEAD
+                                if (!container) return;
+                                try {
+                                    var qrText = ${JSON.stringify(qrTextShort)};
+                                    if (qrText && qrText !== 'بيانات الصيدلية' && qrText.length > 0 && qrText.length < 800) {
+                                        container.innerHTML = '';
+                                        new QRCode(container, {
+                                            text: qrText,
+                                            width: 120,
+                                            height: 120,
+                                            colorDark: "#000000",
+                                            colorLight: "#ffffff",
+                                            correctLevel: QRCode.CorrectLevel.M
+                                        });
+                                    } else {
+                                        container.innerHTML = '<div style="font-size:12px;color:#2c7da0;">${companyData.pharmacyName || "بيانات الصيدلية"}</div>';
+                                    }
+                                } catch(e) {
+                                    if (container) container.innerHTML = '<div style="font-size:12px;color:#2c7da0;">شكراً لكم</div>';
+                                }
+                            }
+                            if (document.readyState === 'loading') {
+                                document.addEventListener('DOMContentLoaded', generateQR);
+                            } else {
+                                generateQR();
+=======
                             } catch(e) {
                                 console.log('QR Error:', e);
                                 const qrContainer = document.getElementById('printQRCode');
                                 if (qrContainer) qrContainer.innerHTML = '<div style="font-size:14px;color:#2c7da0;"> ${companyData.pharmacyName || ''}</div>';
+>>>>>>> 8241e6ffe1eb487c84726f09ee93725be3007d42
                             }
                         })();
                     <\/script>
@@ -775,7 +815,7 @@
                 </html>
             `);
             win.document.close();
-            setTimeout(() => { win.print(); }, 500);
+            setTimeout(() => { win.print(); win.close(); }, 800);
         }
 
         function closePaymentModal() { document.getElementById('paymentModal').classList.remove('active'); }
