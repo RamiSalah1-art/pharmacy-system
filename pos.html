@@ -6,8 +6,9 @@
     <title>نقطة البيع - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- استخدام مكتبة QRCode مختلفة وأكثر استقراراً -->
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <!-- استخدام مكتبة QRCode حديثة وقوية -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -429,6 +430,7 @@
             return { pharmacyName: '', commercialRegister: '', taxNumber: '', phone: '', email: '', address: '', website: '' };
         }
 
+        // دالة QR Code جديدة باستخدام مكتبة حديثة
         function formatQRText() {
             const data = getCompanyData();
             let parts = [];
@@ -438,7 +440,57 @@
             if (data.phone) parts.push(data.phone);
             if (data.address) parts.push(data.address);
             if (parts.length === 0) return 'بيانات الصيدلية';
-            return parts.join(' - ');
+            return parts.join(' | ');
+        }
+
+        // دالة إنشاء QR Code باستخدام qrcode-generator
+        function generateQRCode(containerId, text, width = 120) {
+            const container = document.getElementById(containerId);
+            if (!container) return false;
+            
+            try {
+                container.innerHTML = '';
+                // استخدام qrcode-generator التي ليس لها حد أقصى
+                const qr = qrcode(0, 'M');
+                qr.addData(text);
+                qr.make();
+                
+                const cellSize = 4;
+                const margin = 4;
+                const qrWidth = qr.getModuleCount() * cellSize + margin * 2;
+                const qrHeight = qr.getModuleCount() * cellSize + margin * 2;
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = qrWidth;
+                canvas.height = qrHeight;
+                canvas.style.width = `${width}px`;
+                canvas.style.height = 'auto';
+                
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, qrWidth, qrHeight);
+                ctx.fillStyle = '#000000';
+                
+                for (let row = 0; row < qr.getModuleCount(); row++) {
+                    for (let col = 0; col < qr.getModuleCount(); col++) {
+                        if (qr.isDark(row, col)) {
+                            ctx.fillRect(
+                                col * cellSize + margin,
+                                row * cellSize + margin,
+                                cellSize,
+                                cellSize
+                            );
+                        }
+                    }
+                }
+                
+                container.appendChild(canvas);
+                return true;
+            } catch(e) {
+                console.error('QR Error:', e);
+                container.innerHTML = '<div style="font-size:12px;color:#2c7da0;">خطأ في الباركود</div>';
+                return false;
+            }
         }
 
         function loadProducts() {
@@ -634,6 +686,8 @@
                 <head>
                     <title>فاتورة ${invoice.number}</title>
                     <meta charset="UTF-8">
+                    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"><\/script>
+                    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"><\/script>
                     <style>
                         * { margin: 0; padding: 0; box-sizing: border-box; }
                         body {
@@ -766,7 +820,6 @@
                             شكراً لثقتكم
                         </div>
                     </div>
-                    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"><\/script>
                     <script>
                         (function() {
                             let attempts = 0;
@@ -777,24 +830,44 @@
                                     setTimeout(generateQR, 150);
                                     return;
                                 }
-<<<<<<< HEAD
                                 if (!container) return;
                                 try {
                                     var qrText = ${JSON.stringify(qrTextShort)};
-                                    if (qrText && qrText !== 'بيانات الصيدلية' && qrText.length > 0 && qrText.length < 800) {
+                                    if (qrText && qrText !== 'بيانات الصيدلية' && qrText.length > 0) {
                                         container.innerHTML = '';
-                                        new QRCode(container, {
-                                            text: qrText,
-                                            width: 120,
-                                            height: 120,
-                                            colorDark: "#000000",
-                                            colorLight: "#ffffff",
-                                            correctLevel: QRCode.CorrectLevel.M
-                                        });
+                                        // استخدام مكتبة qrcode-generator الحديثة
+                                        var qr = qrcode(0, 'M');
+                                        qr.addData(qrText);
+                                        qr.make();
+                                        var cellSize = 4;
+                                        var margin = 4;
+                                        var canvas = document.createElement('canvas');
+                                        canvas.width = qr.getModuleCount() * cellSize + margin * 2;
+                                        canvas.height = qr.getModuleCount() * cellSize + margin * 2;
+                                        canvas.style.width = '120px';
+                                        canvas.style.height = 'auto';
+                                        var ctx = canvas.getContext('2d');
+                                        ctx.fillStyle = '#ffffff';
+                                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                        ctx.fillStyle = '#000000';
+                                        for (var row = 0; row < qr.getModuleCount(); row++) {
+                                            for (var col = 0; col < qr.getModuleCount(); col++) {
+                                                if (qr.isDark(row, col)) {
+                                                    ctx.fillRect(
+                                                        col * cellSize + margin,
+                                                        row * cellSize + margin,
+                                                        cellSize,
+                                                        cellSize
+                                                    );
+                                                }
+                                            }
+                                        }
+                                        container.appendChild(canvas);
                                     } else {
                                         container.innerHTML = '<div style="font-size:12px;color:#2c7da0;">${companyData.pharmacyName || "بيانات الصيدلية"}</div>';
                                     }
                                 } catch(e) {
+                                    console.log('QR Error:', e);
                                     if (container) container.innerHTML = '<div style="font-size:12px;color:#2c7da0;">شكراً لكم</div>';
                                 }
                             }
@@ -802,12 +875,6 @@
                                 document.addEventListener('DOMContentLoaded', generateQR);
                             } else {
                                 generateQR();
-=======
-                            } catch(e) {
-                                console.log('QR Error:', e);
-                                const qrContainer = document.getElementById('printQRCode');
-                                if (qrContainer) qrContainer.innerHTML = '<div style="font-size:14px;color:#2c7da0;"> ${companyData.pharmacyName || ''}</div>';
->>>>>>> 8241e6ffe1eb487c84726f09ee93725be3007d42
                             }
                         })();
                     <\/script>
