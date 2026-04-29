@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>المخزون - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="js/firebase-config.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -253,7 +260,7 @@
                             <tr><th>#</th><th>اسم المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>الحد الأدنى</th><th>الباركود</th><th>تاريخ الانتهاء</th><th>الإجراءات</th></tr>
                         </thead>
                         <tbody id="productsList">
-                            <tr><td colspan="9" style="text-align:center;">جاري التحميل...</td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td></tr>
+                            <tr><td colspan="9" style="text-align:center;">جاري التحميل...<\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -282,7 +289,6 @@
         let products = [];
         let currentPharmacyId = null;
         
-        // دالة تحميل الشعار واسم الصيدلية
         function loadCompanyInfo() {
             const savedLogo = localStorage.getItem('pharmacyLogo');
             if (savedLogo) {
@@ -298,8 +304,12 @@
             }
         }
         
-        // تحميل المنتجات من Firebase
         async function loadProducts() {
+            if (typeof firebase === 'undefined') {
+                console.error("Firebase not loaded yet");
+                setTimeout(loadProducts, 200);
+                return;
+            }
             const user = firebase.auth().currentUser;
             if (!user) {
                 console.log("No user logged in");
@@ -325,7 +335,7 @@
         function displayProducts() {
             const tbody = document.getElementById('productsList');
             if (!products.length) { 
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات</td></tr>'; 
+                tbody.innerHTML = '<td><td colspan="9" style="text-align:center;">لا توجد منتجات<\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td><td style="display:none;"><\/td></tr>'; 
                 return; 
             }
             let html = '';
@@ -334,16 +344,16 @@
                 html += `<tr>
                     <td>${i+1}</td>
                     <td><strong>${p.name}</strong></td>
-                    <td>${p.purchasePrice} ج.س</td>
-                    <td style="color:#27ae60;">${p.sellingPrice} ج.س</td>
-                    <td class="${lowStockClass}">${p.quantity}</td>
-                    <td>${p.minStock}</td>
-                    <td>${p.barcode || '-'}</td>
-                    <td>${p.expiryDate || '-'}</td>
+                    <td>${p.purchasePrice} ج.س<\/td>
+                    <td style="color:#27ae60;">${p.sellingPrice} ج.س<\/td>
+                    <td class="${lowStockClass}">${p.quantity}<\/td>
+                    <td>${p.minStock}<\/td>
+                    <td>${p.barcode || '-'}<\/td>
+                    <td>${p.expiryDate || '-'}<\/td>
                     <td>
-                        <button class="btn-edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn-delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
+                        <button class="btn-edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i><\/button>
+                        <button class="btn-delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i><\/button>
+                     <\/td>
                 </tr>`;
             });
             tbody.innerHTML = html;
@@ -369,6 +379,7 @@
         }
         
         async function saveProduct() {
+            if (typeof firebase === 'undefined') { alert("جاري تحميل Firebase... أعد المحاولة"); return; }
             const id = document.getElementById('productId').value;
             const name = document.getElementById('productName').value.trim();
             if (!name) { alert('⚠️ اسم المنتج مطلوب'); return; }
@@ -390,14 +401,12 @@
             
             try {
                 if (id === '') {
-                    // إضافة منتج جديد
                     const newId = Date.now().toString();
                     await productsRef.doc(newId).set({
                         name, purchasePrice, sellingPrice, quantity, minStock, barcode, expiryDate
                     });
                     alert('✅ تم إضافة المنتج');
                 } else {
-                    // تعديل منتج
                     await productsRef.doc(id).update({
                         name, purchasePrice, sellingPrice, quantity, minStock, barcode, expiryDate
                     });
@@ -407,7 +416,7 @@
                 await loadProducts();
             } catch(error) {
                 console.error("Error saving product:", error);
-                alert("خطأ في حفظ المنتج");
+                alert("خطأ في حفظ المنتج: " + error.message);
             }
         }
         
@@ -428,7 +437,7 @@
         
         async function deleteProduct(id) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذا المنتج؟')) return;
-            
+            if (typeof firebase === 'undefined') { alert("جاري تحميل Firebase... أعد المحاولة"); return; }
             const user = firebase.auth().currentUser;
             if (!user) {
                 alert("الرجاء تسجيل الدخول أولاً");
@@ -443,7 +452,7 @@
                 await loadProducts();
             } catch(error) {
                 console.error("Error deleting product:", error);
-                alert("خطأ في حذف المنتج");
+                alert("خطأ في حذف المنتج: " + error.message);
             }
         }
         
@@ -465,18 +474,24 @@
         
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
         
-        // التحقق من تسجيل الدخول وتحميل البيانات
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
         
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                loadProducts();
-                loadCompanyInfo();
+        setTimeout(() => {
+            if (typeof firebase !== 'undefined') {
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (user) {
+                        loadProducts();
+                        loadCompanyInfo();
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                });
             } else {
-                window.location.href = 'index.html';
+                console.error("Firebase still not defined after timeout");
+                alert("خطأ في تحميل Firebase. الرجاء تحديث الصفحة.");
             }
-        });
+        }, 100);
     </script>
 </body>
 </html>
