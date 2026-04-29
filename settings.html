@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
+        /* كل الاستايلات مثل ما هي، لم نغيرها */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Cairo', sans-serif;
@@ -256,13 +257,8 @@
                     
                     <div class="settings-card">
                         <h2><i class="fas fa-image"></i> شعار الصيدلية</h2>
-                        <div class="form-group">
-                            <label>رفع شعار جديد</label>
-                            <input type="file" id="logoUpload" accept="image/*">
-                        </div>
-                        <div class="logo-preview">
-                            <img id="logoPreviewImg" src="" alt="معاينة الشعار" style="display: none;">
-                        </div>
+                        <div class="form-group"><label>رفع شعار جديد</label><input type="file" id="logoUpload" accept="image/*"></div>
+                        <div class="logo-preview"><img id="logoPreviewImg" src="" alt="معاينة الشعار" style="display: none;"></div>
                         <div style="display: flex; gap: 10px;">
                             <button id="saveLogoBtn" class="btn-secondary">💾 حفظ الشعار</button>
                             <button id="removeLogoBtn" class="btn-danger">🗑️ إزالة الشعار</button>
@@ -271,10 +267,7 @@
                     
                     <div class="settings-card">
                         <h2><i class="fas fa-store"></i> معلومات الصيدلية والبيانات الرسمية</h2>
-                        <div class="form-group">
-                            <label>اسم الصيدلية</label>
-                            <input type="text" id="pharmacyName" placeholder="اسم الصيدلية">
-                        </div>
+                        <div class="form-group"><label>اسم الصيدلية</label><input type="text" id="pharmacyName" placeholder="اسم الصيدلية"></div>
                         <div class="form-row">
                             <div class="form-group"><label>السجل التجاري</label><input type="text" id="commercialRegister" placeholder="رقم السجل التجاري"></div>
                             <div class="form-group"><label>الرقم الضريبي</label><input type="text" id="taxNumber" placeholder="الرقم الضريبي"></div>
@@ -285,12 +278,9 @@
                         </div>
                         <div class="form-group"><label>العنوان الكامل</label><input type="text" id="address" placeholder="العنوان الكامل"></div>
                         <div class="form-group"><label>الموقع الإلكتروني (اختياري)</label><input type="url" id="website" placeholder="https://"></div>
-                        
                         <button id="saveCompanyInfoBtn" class="btn-secondary">💾 حفظ بيانات الصيدلية</button>
-                        
                         <h3 style="margin-top: 25px; font-size: 16px;">بيانات الشركة التي ستظهر في QR Code:</h3>
                         <div class="company-info-display" id="companyInfoDisplay"></div>
-                        
                         <h3 style="margin-top: 15px; font-size: 16px;">معاينة QR Code:</h3>
                         <div id="qrcodePreview" class="qr-preview"></div>
                     </div>
@@ -309,18 +299,10 @@
                             <input type="text" id="newUserName" placeholder="اسم المستخدم" style="flex:2; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
                             <input type="email" id="newUserEmail" placeholder="البريد الإلكتروني" style="flex:2; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
                             <input type="text" id="newUserPassword" placeholder="كلمة المرور" value="123456" style="flex:1; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
-                            <select id="newUserRole" style="padding: 8px; border-radius: 8px;">
-                                <option value="pharmacist">💊 صيدلي</option>
-                                <option value="cashier">💰 كاشير</option>
-                            </select>
+                            <select id="newUserRole" style="padding: 8px; border-radius: 8px;"><option value="pharmacist">💊 صيدلي</option><option value="cashier">💰 كاشير</option></select>
                             <button class="btn-add" onclick="addUser()"><i class="fas fa-plus"></i> إضافة</button>
                         </div>
-                        <div style="overflow-x: auto;">
-                            <table class="users-table">
-                                <thead><tr><th>#</th><th>الاسم</th><th>البريد</th><th>الدور</th><th>تاريخ الإضافة</th><th></th></tr></thead>
-                                <tbody id="usersList"></tbody>
-                            </table>
-                        </div>
+                        <div style="overflow-x: auto;"><table class="users-table"><thead><th>#</th><th>الاسم</th><th>البريد</th><th>الدور</th><th>تاريخ الإضافة</th><th></th></thead><tbody id="usersList"></tbody></table></div>
                     </div>
                     
                     <button id="saveBtn" class="btn-save">💾 حفظ جميع الإعدادات</button>
@@ -350,10 +332,7 @@
         function saveLogoToLocalStorage() {
             const fileInput = document.getElementById('logoUpload');
             const file = fileInput.files[0];
-            if (!file) {
-                alert('⚠️ يرجى اختيار صورة أولاً');
-                return;
-            }
+            if (!file) { alert('⚠️ يرجى اختيار صورة أولاً'); return; }
             const reader = new FileReader();
             reader.onload = function(e) {
                 localStorage.setItem('pharmacyLogo', e.target.result);
@@ -373,28 +352,16 @@
         
         function displayLogoEverywhere(logoData) {
             const previewImg = document.getElementById('logoPreviewImg');
-            if (logoData) {
-                previewImg.src = logoData;
-                previewImg.style.display = 'block';
-            } else {
-                previewImg.style.display = 'none';
-                previewImg.src = '';
-            }
+            if (logoData) { previewImg.src = logoData; previewImg.style.display = 'block'; }
+            else { previewImg.style.display = 'none'; previewImg.src = ''; }
             const sidebarLogo = document.getElementById('sidebarLogo');
             if (sidebarLogo) {
-                if (logoData) {
-                    sidebarLogo.src = logoData;
-                    sidebarLogo.style.display = 'block';
-                } else {
-                    sidebarLogo.style.display = 'none';
-                }
+                if (logoData) { sidebarLogo.src = logoData; sidebarLogo.style.display = 'block'; }
+                else { sidebarLogo.style.display = 'none'; }
             }
         }
         
-        function loadSavedLogo() {
-            const savedLogo = localStorage.getItem('pharmacyLogo');
-            if (savedLogo) displayLogoEverywhere(savedLogo);
-        }
+        function loadSavedLogo() { const savedLogo = localStorage.getItem('pharmacyLogo'); if (savedLogo) displayLogoEverywhere(savedLogo); }
         
         function getCompanyData() {
             return {
@@ -446,8 +413,7 @@
                     const qr = qrcode(0, 'M');
                     qr.addData(qrText);
                     qr.make();
-                    const cellSize = 4;
-                    const margin = 4;
+                    const cellSize = 4, margin = 4;
                     const canvas = document.createElement('canvas');
                     canvas.width = qr.getModuleCount() * cellSize + margin * 2;
                     canvas.height = qr.getModuleCount() * cellSize + margin * 2;
@@ -458,45 +424,41 @@
                     ctx.fillStyle = '#000000';
                     for (let row = 0; row < qr.getModuleCount(); row++) {
                         for (let col = 0; col < qr.getModuleCount(); col++) {
-                            if (qr.isDark(row, col)) {
-                                ctx.fillRect(col * cellSize + margin, row * cellSize + margin, cellSize, cellSize);
-                            }
+                            if (qr.isDark(row, col)) ctx.fillRect(col * cellSize + margin, row * cellSize + margin, cellSize, cellSize);
                         }
                     }
                     qrContainer.appendChild(canvas);
-                } catch(e) {
-                    console.error('QR Error:', e);
-                    qrContainer.innerHTML = '<p style="color:gray;">خطأ في إنشاء QR Code</p>';
-                }
-            } else {
-                qrContainer.innerHTML = '<p style="color:gray;">أدخل بيانات الصيدلية لظهور QR Code</p>';
-            }
+                } catch(e) { console.error('QR Error:', e); qrContainer.innerHTML = '<p style="color:gray;">خطأ في إنشاء QR Code</p>'; }
+            } else { qrContainer.innerHTML = '<p style="color:gray;">أدخل بيانات الصيدلية لظهور QR Code</p>'; }
         }
         
-        // ===== الدالة المعدلة: تحفظ البيانات في localStorage وفي Firebase =====
+        // ========== الدالة المعدلة الأساسية ==========
         async function saveCompanyInfo() {
             const companyData = getCompanyData();
             
-            // حفظ في localStorage
+            // 1. حفظ في localStorage
             localStorage.setItem('companyData', JSON.stringify(companyData));
             
-            // تحديث اسم الصيدلية في Firebase
+            // 2. حفظ في pharmacySettings (للاستخدام في باقي الصفحات)
+            const currentSettings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            currentSettings.pharmacyName = companyData.pharmacyName;
+            localStorage.setItem('pharmacySettings', JSON.stringify(currentSettings));
+            
+            // 3. تحديث اسم الصيدلية في Firebase (المصدر الرئيسي)
             const user = auth.currentUser;
             if (user) {
                 const pharmacyRef = db.collection('pharmacies').doc(user.uid);
                 try {
-                    await pharmacyRef.update({
-                        name: companyData.pharmacyName
-                    });
+                    await pharmacyRef.update({ name: companyData.pharmacyName });
                     console.log("✅ تم تحديث اسم الصيدلية في Firebase");
                 } catch (error) {
-                    // إذا لم يكن المستند موجوداً، ننشئه
+                    // إذا لم يكن المستند موجوداً، نقوم بإنشائه
                     await pharmacyRef.set({ name: companyData.pharmacyName });
-                    console.log("✅ تم إنشاء مستند الصيدلية في Firebase مع الاسم");
+                    console.log("✅ تم إنشاء مستند الصيدلية في Firebase");
                 }
             }
             
-            // تحديث الاسم في الواجهة
+            // 4. تحديث الواجهة
             if (companyData.pharmacyName) {
                 document.getElementById('pharmacyNameHeader').innerHTML = companyData.pharmacyName;
             }
@@ -505,6 +467,7 @@
             generateQRCode();
             alert('✅ تم حفظ بيانات الصيدلية وتحديث QR Code');
         }
+        // ===========================================
         
         function loadCompanyData() {
             const savedData = localStorage.getItem('companyData');
@@ -547,7 +510,6 @@
             const user = auth.currentUser;
             if (!user) return;
             currentUser = user;
-            
             const userDoc = await db.collection('users').doc(user.uid).get();
             if (userDoc.exists) {
                 currentPharmacyId = userDoc.data().pharmacyId;
@@ -568,24 +530,14 @@
         
         function displayUsers() {
             const tbody = document.getElementById('usersList');
-            if (!pharmacyUsers.length) {
-                tbody.innerHTML = '<td><td colspan="6" style="text-align:center;">لا يوجد موظفين<\/td><\/tr>';
-                return;
-            }
+            if (!pharmacyUsers.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا يوجد موظفين</td></tr>'; return; }
             let html = '';
             pharmacyUsers.forEach((u, i) => {
                 let roleClass = '', roleText = '';
                 if (u.role === 'admin') { roleClass = 'badge-admin'; roleText = 'مدير'; }
                 else if (u.role === 'pharmacist') { roleClass = 'badge-pharmacist'; roleText = 'صيدلي'; }
                 else { roleClass = 'badge-cashier'; roleText = 'كاشير'; }
-                html += `<tr>
-                    <td>${i+1}</td>
-                    <td>${u.displayName || u.email}</td>
-                    <td>${u.email}</td>
-                    <td><span class="${roleClass}">${roleText}</span></td>
-                    <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('ar-SA') : '-'}</td>
-                    <td>${u.role !== 'admin' ? `<button class="btn-delete" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>` : ''}</td>
-                </tr>`;
+                html += `<tr><td>${i+1}</td><td>${u.displayName || u.email}</td><td>${u.email}</td><td><span class="${roleClass}">${roleText}</span></td><td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('ar-SA') : '-'}</td><td>${u.role !== 'admin' ? `<button class="btn-delete" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`;
             });
             tbody.innerHTML = html;
         }
@@ -595,51 +547,23 @@
             const email = document.getElementById('newUserEmail').value;
             const password = document.getElementById('newUserPassword').value;
             const role = document.getElementById('newUserRole').value;
-            
-            if (!email || !password) {
-                alert('⚠️ يرجى إدخال البريد وكلمة المرور');
-                return;
-            }
-            
+            if (!email || !password) { alert('⚠️ يرجى إدخال البريد وكلمة المرور'); return; }
             try {
                 const pharmacyDoc = await db.collection('pharmacies').doc(currentPharmacyId).get();
                 const pharmacy = pharmacyDoc.data();
                 const maxUsers = pharmacy.maxUsers || 1;
-                if (pharmacyUsers.length >= maxUsers) {
-                    alert(`⚠️ لا يمكن إضافة موظفين جدد، الباقة الحالية تسمح بـ ${maxUsers} مستخدمين فقط`);
-                    return;
-                }
-                
+                if (pharmacyUsers.length >= maxUsers) { alert(`⚠️ لا يمكن إضافة موظفين جدد، الباقة الحالية تسمح بـ ${maxUsers} مستخدمين فقط`); return; }
                 const userCred = await auth.createUserWithEmailAndPassword(email, password);
-                await db.collection('users').doc(userCred.user.uid).set({
-                    uid: userCred.user.uid,
-                    email: email,
-                    displayName: name || email.split('@')[0],
-                    role: role,
-                    pharmacyId: currentPharmacyId,
-                    pharmacyName: pharmacy.name,
-                    createdAt: new Date().toISOString()
-                });
-                
-                document.getElementById('newUserName').value = '';
-                document.getElementById('newUserEmail').value = '';
-                document.getElementById('newUserPassword').value = '123456';
-                alert('✅ تم إضافة المستخدم بنجاح');
-                loadPharmacyUsers();
-            } catch(error) {
-                alert('❌ خطأ: ' + error.message);
-            }
+                await db.collection('users').doc(userCred.user.uid).set({ uid: userCred.user.uid, email: email, displayName: name || email.split('@')[0], role: role, pharmacyId: currentPharmacyId, pharmacyName: pharmacy.name, createdAt: new Date().toISOString() });
+                document.getElementById('newUserName').value = ''; document.getElementById('newUserEmail').value = ''; document.getElementById('newUserPassword').value = '123456';
+                alert('✅ تم إضافة المستخدم بنجاح'); loadPharmacyUsers();
+            } catch(error) { alert('❌ خطأ: ' + error.message); }
         }
         
         async function deleteUser(id) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذا المستخدم؟')) return;
-            try {
-                await db.collection('users').doc(id).delete();
-                alert('✅ تم حذف المستخدم');
-                loadPharmacyUsers();
-            } catch(error) {
-                alert('❌ خطأ: ' + error.message);
-            }
+            try { await db.collection('users').doc(id).delete(); alert('✅ تم حذف المستخدم'); loadPharmacyUsers(); } 
+            catch(error) { alert('❌ خطأ: ' + error.message); }
         }
         
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
@@ -652,27 +576,14 @@
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         
         const inputs = ['pharmacyName', 'commercialRegister', 'taxNumber', 'phone', 'email', 'address', 'website'];
-        inputs.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.oninput = () => {
-                    updateCompanyInfoDisplay();
-                    generateQRCode();
-                };
-            }
-        });
+        inputs.forEach(id => { const el = document.getElementById(id); if (el) { el.oninput = () => { updateCompanyInfoDisplay(); generateQRCode(); }; } });
         
         auth.onAuthStateChanged((user) => {
-            if (!user && !window.location.pathname.includes('index.html')) {
-                window.location.href = 'index.html';
-            } else if (user) {
-                loadCurrentUser();
-            }
+            if (!user && !window.location.pathname.includes('index.html')) { window.location.href = 'index.html'; } 
+            else if (user) { loadCurrentUser(); }
         });
         
-        if (!sessionStorage.getItem('loggedIn')) {
-            window.location.href = 'index.html';
-        }
+        if (!sessionStorage.getItem('loggedIn')) { window.location.href = 'index.html'; }
     </script>
 </body>
 </html>
