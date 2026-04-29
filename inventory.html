@@ -35,7 +35,6 @@
         }
         .app-container { display: flex; height: 100vh; }
         
-        /* ===== القائمة الجانبية الاحترافية ===== */
         .sidebar {
             width: 280px;
             background: linear-gradient(180deg, #1a2a3a 0%, #0f1724 100%);
@@ -87,10 +86,7 @@
             border-right: 3px solid #f39c12;
         }
         
-        .sidebar-nav i {
-            width: 24px;
-            font-size: 18px;
-        }
+        .sidebar-nav i { width: 24px; font-size: 18px; }
         
         .sidebar-footer {
             padding: 20px;
@@ -112,11 +108,8 @@
             transition: 0.3s;
         }
         
-        .logout-btn:hover {
-            background: #e74c3c;
-        }
+        .logout-btn:hover { background: #e74c3c; }
         
-        /* ===== المحتوى الرئيسي ===== */
         .main-content {
             flex: 1;
             display: flex;
@@ -149,10 +142,7 @@
             color: #2c3e50;
         }
         
-        .user-info i {
-            font-size: 24px;
-            color: #2c7da0;
-        }
+        .user-info i { font-size: 24px; color: #2c7da0; }
         
         .content-wrapper {
             flex: 1;
@@ -169,10 +159,7 @@
             gap: 10px;
         }
         
-        .header-actions h1 {
-            font-size: 24px;
-            color: #2c3e50;
-        }
+        .header-actions h1 { font-size: 24px; color: #2c3e50; }
         
         .btn-primary {
             background: linear-gradient(135deg, #2c7da0, #61a5c2);
@@ -237,10 +224,7 @@
             margin: 0 3px;
         }
         
-        .text-danger {
-            color: #e74c3c;
-            font-weight: bold;
-        }
+        .text-danger { color: #e74c3c; font-weight: bold; }
         
         .modal {
             display: none;
@@ -285,9 +269,7 @@
             gap: 10px;
         }
         
-        .form-group {
-            margin-bottom: 15px;
-        }
+        .form-group { margin-bottom: 15px; }
         
         .form-group label {
             display: block;
@@ -391,6 +373,9 @@
         let currentPharmacyId = null;
         
         function loadCompanyInfo() {
+            const nameHeader = document.getElementById('pharmacyNameHeader');
+            if (!nameHeader) return; // منع الخطأ إذا العنصر غير موجود
+            
             const savedLogo = localStorage.getItem('pharmacyLogo');
             const sidebarLogo = document.getElementById('sidebarLogo');
             const sidebarIcon = document.getElementById('sidebarIcon');
@@ -407,8 +392,7 @@
             const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
             const companyData = JSON.parse(localStorage.getItem('companyData') || '{}');
             const pharmacyName = settings.pharmacyName || companyData.pharmacyName || 'نظام الصيدلية';
-            const nameHeader = document.getElementById('pharmacyNameHeader');
-            if (nameHeader) nameHeader.innerHTML = pharmacyName;
+            nameHeader.innerHTML = pharmacyName;
         }
         
         async function loadProducts() {
@@ -544,7 +528,7 @@
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 loadProducts();
-                loadCompanyInfo();
+                setTimeout(() => loadCompanyInfo(), 100);
             } else {
                 window.location.href = 'index.html';
             }
