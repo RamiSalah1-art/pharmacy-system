@@ -432,6 +432,7 @@
             });
         }
         
+        // ===== الدوال المعدلة (توسيط المحتوى) =====
         function displayTopProducts() {
             const sales = {};
             filteredInvoices.forEach(inv => {
@@ -443,7 +444,7 @@
             });
             const sorted = Object.entries(sales).sort((a,b) => b[1].total - a[1].total).slice(0,5);
             let html = '';
-            sorted.forEach(([name, data]) => { html += `<tr><td style="text-align:right;">${name}</td><td style="text-align:center;">${data.qty}</td><td style="text-align:center;">${data.total.toFixed(2)} ج.س</td></tr>`; });
+            sorted.forEach(([name, data]) => { html += `<tr><td style="text-align:center;">${name}</td><td style="text-align:center;">${data.qty}</td><td style="text-align:center;">${data.total.toFixed(2)} ج.س</strong></td></tr>`; });
             document.getElementById('topProducts').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">لا توجد بيانات</td></tr>';
         }
         
@@ -458,16 +459,22 @@
             });
             const sorted = Object.entries(data).sort((a,b) => b[1].total - a[1].total).slice(0,5);
             let html = '';
-            sorted.forEach(([name, d]) => { html += `<tr><td style="text-align:right;">${name}</td><td style="text-align:center;">${d.count}</td><td style="text-align:center;">${d.total.toFixed(2)} ج.س</td></tr>`; });
+            sorted.forEach(([name, d]) => { html += `<tr><td style="text-align:center;">${name}</td><td style="text-align:center;">${d.count}</td><td style="text-align:center;">${d.total.toFixed(2)} ج.س</strong></td></tr>`; });
             document.getElementById('topCustomers').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">لا توجد بيانات</td></tr>';
         }
         
         function displayInvoicesList() {
             const tbody = document.getElementById('invoicesList');
-            if (filteredInvoices.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد فواتير</td></tr>'; return; }
+            if (filteredInvoices.length === 0) { tbody.innerHTML = '<td><td colspan="5" style="text-align:center;">لا توجد فواتير</td></tr>'; return; }
             let html = '';
             filteredInvoices.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(inv => {
-                html += `<tr><td style="text-align:right;">${inv.number || '-'}</td><td style="text-align:right;">${inv.customerName || 'نقدي'}</td><td style="text-align:center;">${new Date(inv.date).toLocaleDateString('ar-SA')}</td><td style="text-align:center;">${inv.paymentMethod || '-'}</td><td style="text-align:center;"><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td></tr>`;
+                html += `<tr>
+                    <td style="text-align:center;">${inv.number || '-'}</td>
+                    <td style="text-align:center;">${inv.customerName || 'نقدي'}</td>
+                    <td style="text-align:center;">${new Date(inv.date).toLocaleDateString('ar-SA')}</td>
+                    <td style="text-align:center;">${inv.paymentMethod || '-'}</td>
+                    <td style="text-align:center;"><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td>
+                </tr>`;
             });
             tbody.innerHTML = html;
         }
@@ -484,12 +491,12 @@
             document.getElementById('stockValue').innerHTML = stockValue.toFixed(2);
             
             let lowHtml = '';
-            lowStock.forEach(p => { lowHtml += `<tr><td style="text-align:right;">${p.name}</td><td class="text-danger" style="text-align:center;">${p.quantity}</td><td style="text-align:center;">${p.minStock}</td><td style="text-align:center;">${p.sellingPrice} ج.س</td></tr>`; });
+            lowStock.forEach(p => { lowHtml += `<tr><td style="text-align:center;">${p.name}</td><td class="text-danger" style="text-align:center;">${p.quantity}</td><td style="text-align:center;">${p.minStock}</td><td style="text-align:center;">${p.sellingPrice} ج.س</td></tr>`; });
             document.getElementById('lowStockList').innerHTML = lowHtml || '<tr><td colspan="4" style="text-align:center;">لا توجد منتجات منخفضة</td></tr>';
             
             let expHtml = '';
-            expired.forEach(p => { expHtml += `<tr><td style="text-align:right;">${p.name}</td><td style="text-align:center;">${p.quantity}</td><td style="text-align:center;">${new Date(p.expiryDate).toLocaleDateString('ar-SA')}</td><td style="text-align:center;">${p.sellingPrice} ج.س</td></tr>`; });
-            document.getElementById('expiredList').innerHTML = expHtml || '<tr><td colspan="4" style="text-align:center;">لا توجد منتجات منتهية</td></tr>';
+            expired.forEach(p => { expHtml += `<tr><td style="text-align:center;">${p.name}</td><td style="text-align:center;">${p.quantity}</td><td style="text-align:center;">${new Date(p.expiryDate).toLocaleDateString('ar-SA')}</td><td style="text-align:center;">${p.sellingPrice} ج.س</td></tr>`; });
+            document.getElementById('expiredList').innerHTML = expHtml || '<td><td colspan="4" style="text-align:center;">لا توجد منتجات منتهية</td></tr>';
         }
         
         function loadProfitsReport() {
@@ -521,7 +528,7 @@
             let html = '';
             Object.entries(productSales).sort((a,b) => (b[1].revenue - b[1].cost) - (a[1].revenue - a[1].cost)).forEach(([name, data]) => {
                 const itemProfit = data.revenue - data.cost;
-                html += `<tr><td style="text-align:right;">${name}</td><td style="text-align:center;">${data.qty}</td><td style="text-align:center;">${(data.revenue/data.qty).toFixed(2)}</td><td style="text-align:center;">${(data.cost/data.qty).toFixed(2)}</td><td style="text-align:center;">${data.revenue.toFixed(2)} ج.س</td><td style="text-align:center;">${data.cost.toFixed(2)} ج.س</td><td style="text-align:center;color:#27ae60;">${itemProfit.toFixed(2)} ج.س</td></tr>`;
+                html += `<tr><td style="text-align:center;">${name}</td><td style="text-align:center;">${data.qty}</td><td style="text-align:center;">${(data.revenue/data.qty).toFixed(2)}</td><td style="text-align:center;">${(data.cost/data.qty).toFixed(2)}</td><td style="text-align:center;">${data.revenue.toFixed(2)} ج.س</td><td style="text-align:center;">${data.cost.toFixed(2)} ج.س</td><td style="text-align:center;color:#27ae60;">${itemProfit.toFixed(2)} ج.س</td></tr>`;
             });
             document.getElementById('profitDetails').innerHTML = html || '<tr><td colspan="7" style="text-align:center;">لا توجد بيانات</td></tr>';
         }
@@ -550,7 +557,7 @@
             let html = '';
             [...cashList, ...bankList].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(inv => {
                 const details = inv.paymentDetails ? `${inv.paymentDetails.bankName || ''} - رقم: ${inv.paymentDetails.transferNumber || ''}` : '-';
-                html += `<tr><td style="text-align:right;">${inv.number}</td><td style="text-align:right;">${inv.customerName || 'نقدي'}</td><td style="text-align:center;">${new Date(inv.date).toLocaleDateString('ar-SA')}</td><td style="text-align:center;">${inv.paymentMethod}</td><td style="text-align:center;"><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td><td style="text-align:center;">${details}</td></tr>`;
+                html += `<tr><td style="text-align:center;">${inv.number}</td><td style="text-align:center;">${inv.customerName || 'نقدي'}</td><td style="text-align:center;">${new Date(inv.date).toLocaleDateString('ar-SA')}</td><td style="text-align:center;">${inv.paymentMethod}</td><td style="text-align:center;"><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td><td style="text-align:center;">${details}</td></tr>`;
             });
             document.getElementById('paymentsList').innerHTML = html || '<tr><td colspan="6" style="text-align:center;">لا توجد مدفوعات</td></tr>';
         }
