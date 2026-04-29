@@ -107,13 +107,15 @@
         }
         .data-table th, .data-table td {
             padding: 12px 15px;
-            text-align: right;
+            text-align: center;
+            vertical-align: middle;
             border-bottom: 1px solid #e0e0e0;
         }
         .data-table th {
             background: #f8f9fa;
             position: sticky;
             top: 0;
+            font-weight: 600;
         }
         .btn-edit {
             background: #f39c12;
@@ -232,7 +234,9 @@
                         <thead>
                             <tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>العنوان</th><th>إجمالي المشتريات</th><th>الإجراءات</th></tr>
                         </thead>
-                        <tbody id="customersList"></tbody>
+                        <tbody id="customersList">
+                            <tr><td colspan="7" style="text-align:center;">جاري التحميل...</td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -255,6 +259,7 @@
 
     <script>
         let customers = [];
+        let currentPharmacyId = null;
 
         function loadCompanyInfo() {
             const savedLogo = localStorage.getItem('pharmacyLogo');
@@ -271,22 +276,34 @@
             }
         }
 
-        // تم تعديل هذه الدالة - إزالة البيانات التجريبية
-        function loadCustomers() {
-            const stored = localStorage.getItem('customers');
-            if (stored) {
-                customers = JSON.parse(stored);
-            } else {
-                customers = [];
-                localStorage.setItem('customers', JSON.stringify(customers));
+        // تحميل العملاء من Firebase
+        async function loadCustomers() {
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                console.log("No user logged in");
+                return;
             }
-            displayCustomers();
+            
+            currentPharmacyId = user.uid;
+            const customersRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('customers');
+            
+            try {
+                const snapshot = await customersRef.get();
+                customers = [];
+                snapshot.forEach(doc => {
+                    customers.push({ id: doc.id, ...doc.data() });
+                });
+                displayCustomers();
+            } catch (error) {
+                console.error("Error loading customers:", error);
+                alert("خطأ في تحميل العملاء");
+            }
         }
 
         function displayCustomers() {
             const tbody = document.getElementById('customersList');
             if (!customers.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا يوجد عملاء</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا يوجد عملاء</td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td></tr>';
                 return;
             }
             let html = '';
@@ -299,8 +316,8 @@
                     <td>${c.address || '-'}</td>
                     <td style="color:#27ae60;">${(c.totalSpent || 0).toFixed(2)} ج.س</td>
                     <td>
-                        <button class="btn-edit" onclick="editCustomer(${c.id})"><i class="fas fa-edit"></i></button>
-                        <button class="btn-delete" onclick="deleteCustomer(${c.id})"><i class="fas fa-trash"></i></button>
+                        <button class="btn-edit" onclick="editCustomer('${c.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteCustomer('${c.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             });
@@ -317,7 +334,7 @@
             document.getElementById('customerModal').classList.add('active');
         }
 
-        function saveCustomer() {
+        async function saveCustomer() {
             const id = document.getElementById('customerId').value;
             const name = document.getElementById('customerName').value.trim();
             if (!name) { alert('⚠️ اسم العميل مطلوب'); return; }
@@ -325,23 +342,38 @@
             const email = document.getElementById('customerEmail').value;
             const address = document.getElementById('customerAddress').value;
 
-            if (id === '') {
-                const newId = customers.length ? Math.max(...customers.map(c => c.id)) + 1 : 1;
-                customers.push({ id: newId, name, phone, email, address, totalSpent: 0 });
-                alert('✅ تم إضافة العميل');
-            } else {
-                const index = customers.findIndex(c => c.id == id);
-                if (index !== -1) {
-                    customers[index] = { ...customers[index], name, phone, email, address };
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("الرجاء تسجيل الدخول أولاً");
+                return;
+            }
+            
+            const customersRef = firebase.firestore().collection('pharmacies').doc(user.uid).collection('customers');
+
+            try {
+                if (id === '') {
+                    // إضافة عميل جديد
+                    const newId = Date.now().toString();
+                    await customersRef.doc(newId).set({
+                        name, phone, email, address, totalSpent: 0
+                    });
+                    alert('✅ تم إضافة العميل');
+                } else {
+                    // تعديل عميل
+                    await customersRef.doc(id).update({
+                        name, phone, email, address
+                    });
                     alert('✅ تم تعديل العميل');
                 }
+                closeModal();
+                await loadCustomers();
+            } catch(error) {
+                console.error("Error saving customer:", error);
+                alert("خطأ في حفظ العميل");
             }
-            localStorage.setItem('customers', JSON.stringify(customers));
-            closeModal();
-            loadCustomers();
         }
 
-        function editCustomer(id) {
+        async function editCustomer(id) {
             const c = customers.find(c => c.id === id);
             if (!c) return;
             document.getElementById('modalTitle').innerHTML = '✏️ تعديل العميل';
@@ -353,11 +385,25 @@
             document.getElementById('customerModal').classList.add('active');
         }
 
-        function deleteCustomer(id) {
+        async function deleteCustomer(id) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذا العميل؟')) return;
-            customers = customers.filter(c => c.id !== id);
-            localStorage.setItem('customers', JSON.stringify(customers));
-            loadCustomers();
+            
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("الرجاء تسجيل الدخول أولاً");
+                return;
+            }
+            
+            const customersRef = firebase.firestore().collection('pharmacies').doc(user.uid).collection('customers');
+            
+            try {
+                await customersRef.doc(id).delete();
+                alert('✅ تم حذف العميل');
+                await loadCustomers();
+            } catch(error) {
+                console.error("Error deleting customer:", error);
+                alert("خطأ في حذف العميل");
+            }
         }
 
         function closeModal() { document.getElementById('customerModal').classList.remove('active'); }
@@ -380,8 +426,15 @@
 
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
-        loadCustomers();
-        loadCompanyInfo();
+        
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                loadCustomers();
+                loadCompanyInfo();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
     </script>
 </body>
 </html>
