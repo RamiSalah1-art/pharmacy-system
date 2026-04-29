@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -5,6 +6,26 @@
     <title>التقارير - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6xbkAe6MqNc-gKg-uHU4TpEdHVb0HYaI",
+            authDomain: "pharmacy-system-cafdf.firebaseapp.com",
+            projectId: "pharmacy-system-cafdf",
+            storageBucket: "pharmacy-system-cafdf.firebasestorage.app",
+            messagingSenderId: "802316904728",
+            appId: "1:802316904728:web:84757a51b203aed94d166d"
+        };
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log("✅ Firebase initialized");
+        }
+    </script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -193,20 +214,20 @@
             align-items: center;
         }
         .data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.data-table th, .data-table td {
-    padding: 12px 15px;
-    text-align: center;
-    vertical-align: middle;
-    border-bottom: 1px solid #e0e0e0;
-}
-.data-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    text-align: center;
-}
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: center;
+            vertical-align: middle;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            text-align: center;
+        }
         .btn-export, .btn-print {
             background: #3498db;
             color: white;
@@ -333,8 +354,8 @@
         let allProducts = [], allCustomers = [], allInvoices = [];
         let filteredInvoices = [];
         let salesChart = null;
+        let currentPharmacyId = null;
         
-        // دالة تحميم الشعار واسم الصيدلية
         function loadCompanyInfo() {
             const savedLogo = localStorage.getItem('pharmacyLogo');
             if (savedLogo) {
@@ -350,22 +371,59 @@
             }
         }
         
-        function loadData() {
-            allProducts = JSON.parse(localStorage.getItem('products') || '[]');
-            allCustomers = JSON.parse(localStorage.getItem('customers') || '[]');
-            allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+        function formatDateYMD(dateString) {
+            if (!dateString) return '-';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '-';
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            } catch(e) {
+                return '-';
+            }
+        }
+        
+        async function loadData() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            currentPharmacyId = user.uid;
             
-            const today = new Date();
-            const weekAgo = new Date();
-            weekAgo.setDate(today.getDate() - 30);
-            document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
-            document.getElementById('toDate').value = today.toISOString().split('T')[0];
-            
-            generateReport();
-            loadInventoryReport();
-            loadProfitsReport();
-            loadPaymentsReport();
-            loadCompanyInfo();
+            try {
+                // تحميل المنتجات من Firebase
+                const productsRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('products');
+                const productsSnap = await productsRef.get();
+                allProducts = [];
+                productsSnap.forEach(doc => allProducts.push({ id: doc.id, ...doc.data() }));
+                
+                // تحميل العملاء من Firebase
+                const customersRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('customers');
+                const customersSnap = await customersRef.get();
+                allCustomers = [];
+                customersSnap.forEach(doc => allCustomers.push({ id: doc.id, ...doc.data() }));
+                
+                // تحميل الفواتير من Firebase
+                const invoicesRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('invoices');
+                const invoicesSnap = await invoicesRef.get();
+                allInvoices = [];
+                invoicesSnap.forEach(doc => allInvoices.push({ id: doc.id, ...doc.data() }));
+                
+                const today = new Date();
+                const weekAgo = new Date();
+                weekAgo.setDate(today.getDate() - 30);
+                document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
+                document.getElementById('toDate').value = today.toISOString().split('T')[0];
+                
+                generateReport();
+                loadInventoryReport();
+                loadProfitsReport();
+                loadPaymentsReport();
+                loadCompanyInfo();
+                
+            } catch (error) {
+                console.error("خطأ في تحميل البيانات:", error);
+            }
         }
         
         function setQuickReport(type) {
@@ -417,7 +475,7 @@
         function updateChart() {
             const daily = {};
             filteredInvoices.forEach(inv => {
-                const date = new Date(inv.date).toLocaleDateString('ar-SA');
+                const date = formatDateYMD(inv.date);
                 daily[date] = (daily[date] || 0) + (inv.total || 0);
             });
             const labels = Object.keys(daily).slice(-14);
@@ -431,7 +489,6 @@
             });
         }
         
-        // ===== الدوال المعدلة (توسيط المحتوى) =====
         function displayTopProducts() {
             const sales = {};
             filteredInvoices.forEach(inv => {
@@ -470,7 +527,7 @@
                 html += `<tr>
                     <td style="text-align:center;">${inv.number || '-'}</td>
                     <td style="text-align:center;">${inv.customerName || 'نقدي'}</td>
-                    <td style="text-align:center;">${new Date(inv.date).toLocaleDateString('ar-SA')}</td>
+                    <td style="text-align:center;">${formatDateYMD(inv.date)}</td>
                     <td style="text-align:center;">${inv.paymentMethod || '-'}</td>
                     <td style="text-align:center;"><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td>
                 </tr>`;
@@ -479,36 +536,34 @@
         }
         
         function loadInventoryReport() {
-            const products = JSON.parse(localStorage.getItem('products') || '[]');
-            const totalProducts = products.length;
-            const lowStock = products.filter(p => p.quantity <= p.minStock);
-            const expired = products.filter(p => p.expiryDate && new Date(p.expiryDate) < new Date());
-            const stockValue = products.reduce((s,p) => s + (p.purchasePrice * p.quantity), 0);
+            const totalProducts = allProducts.length;
+            const lowStock = allProducts.filter(p => p.quantity <= (p.minStock || 0));
+            const expired = allProducts.filter(p => p.expiryDate && new Date(p.expiryDate) < new Date());
+            const stockValue = allProducts.reduce((s,p) => s + ((p.purchasePrice || 0) * (p.quantity || 0)), 0);
             document.getElementById('totalProducts').innerHTML = totalProducts;
             document.getElementById('lowStockCount').innerHTML = lowStock.length;
             document.getElementById('expiredCount').innerHTML = expired.length;
             document.getElementById('stockValue').innerHTML = stockValue.toFixed(2);
             
             let lowHtml = '';
-            lowStock.forEach(p => { lowHtml += `<tr><td style="text-align:center;">${p.name}</td><td class="text-danger" style="text-align:center;">${p.quantity}</td><td style="text-align:center;">${p.minStock}</td><td style="text-align:center;">${p.sellingPrice} ج.س</td></tr>`; });
+            lowStock.forEach(p => { lowHtml += `<td><td style="text-align:center;">${p.name}</td><td class="text-danger" style="text-align:center;">${p.quantity}</td><td style="text-align:center;">${p.minStock || 0}</td><td style="text-align:center;">${p.sellingPrice} ج.س</td><tr>`; });
             document.getElementById('lowStockList').innerHTML = lowHtml || '<tr><td colspan="4" style="text-align:center;">لا توجد منتجات منخفضة</td></tr>';
             
             let expHtml = '';
-            expired.forEach(p => { expHtml += `<tr><td style="text-align:center;">${p.name}</td><td style="text-align:center;">${p.quantity}</td><td style="text-align:center;">${new Date(p.expiryDate).toLocaleDateString('ar-SA')}</td><td style="text-align:center;">${p.sellingPrice} ج.س</td></tr>`; });
-            document.getElementById('expiredList').innerHTML = expHtml || '<td><td colspan="4" style="text-align:center;">لا توجد منتجات منتهية</td></tr>';
+            expired.forEach(p => { expHtml += `<tr><td style="text-align:center;">${p.name}</td><td style="text-align:center;">${p.quantity}</td><td style="text-align:center;">${formatDateYMD(p.expiryDate)}</td><td style="text-align:center;">${p.sellingPrice} ج.س</td></tr>`; });
+            document.getElementById('expiredList').innerHTML = expHtml || '<tr><td colspan="4" style="text-align:center;">لا توجد منتجات منتهية</td></tr>';
         }
         
         function loadProfitsReport() {
-            const products = JSON.parse(localStorage.getItem('products') || '[]');
-            const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
             let totalRevenue = 0, totalCost = 0;
             const productSales = {};
-            invoices.forEach(inv => {
+            
+            allInvoices.forEach(inv => {
                 if (inv.items) {
                     inv.items.forEach(item => {
                         totalRevenue += item.price * item.quantity;
-                        const product = products.find(p => p.name === item.name);
-                        const cost = product ? product.purchasePrice * item.quantity : 0;
+                        const product = allProducts.find(p => p.name === item.name);
+                        const cost = product ? (product.purchasePrice || 0) * item.quantity : 0;
                         totalCost += cost;
                         if (!productSales[item.name]) productSales[item.name] = { qty: 0, revenue: 0, cost: 0 };
                         productSales[item.name].qty += item.quantity;
@@ -533,10 +588,9 @@
         }
         
         function loadPaymentsReport() {
-            const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
             let cashTotal = 0, bankTotal = 0;
             let cashList = [], bankList = [];
-            invoices.forEach(inv => {
+            allInvoices.forEach(inv => {
                 if (inv.paymentMethod === 'نقدي') {
                     cashTotal += inv.total || 0;
                     cashList.push(inv);
@@ -556,7 +610,7 @@
             let html = '';
             [...cashList, ...bankList].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(inv => {
                 const details = inv.paymentDetails ? `${inv.paymentDetails.bankName || ''} - رقم: ${inv.paymentDetails.transferNumber || ''}` : '-';
-                html += `<tr><td style="text-align:center;">${inv.number}</td><td style="text-align:center;">${inv.customerName || 'نقدي'}</td><td style="text-align:center;">${new Date(inv.date).toLocaleDateString('ar-SA')}</td><td style="text-align:center;">${inv.paymentMethod}</td><td style="text-align:center;"><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td><td style="text-align:center;">${details}</td></tr>`;
+                html += `｜｜DSML｜｜<td style="text-align:center;">${inv.number}</td><td style="text-align:center;">${inv.customerName || 'نقدي'}</td><td style="text-align:center;">${formatDateYMD(inv.date)}</td><td style="text-align:center;">${inv.paymentMethod}</td><td style="text-align:center;"><strong>${(inv.total || 0).toFixed(2)} ج.س</strong></td><td style="text-align:center;">${details}</td></tr>`;
             });
             document.getElementById('paymentsList').innerHTML = html || '<tr><td colspan="6" style="text-align:center;">لا توجد مدفوعات</td></tr>';
         }
@@ -578,7 +632,7 @@
         function exportToExcel() {
             let csv = "رقم الفاتورة,العميل,التاريخ,طريقة الدفع,المبلغ\n";
             filteredInvoices.forEach(inv => {
-                csv += `"${inv.number}","${inv.customerName || 'نقدي'}","${new Date(inv.date).toLocaleDateString('ar-SA')}","${inv.paymentMethod || '-'}",${(inv.total || 0).toFixed(2)}\n`;
+                csv += `"${inv.number}","${inv.customerName || 'نقدي'}","${formatDateYMD(inv.date)}","${inv.paymentMethod || '-'}",${(inv.total || 0).toFixed(2)}\n`;
             });
             const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -594,7 +648,14 @@
         
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
-        loadData();
+        
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                loadData();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
     </script>
 </body>
 </html>
