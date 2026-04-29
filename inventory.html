@@ -13,13 +13,11 @@
             height: 100vh;
             overflow: hidden;
         }
-        /* تخطيط الصفحة */
         .app-container {
             display: flex;
             height: 100vh;
             width: 100%;
         }
-        /* القائمة الجانبية */
         .sidebar {
             width: 260px;
             background: white;
@@ -62,7 +60,6 @@
             border-radius: 8px;
             cursor: pointer;
         }
-        /* المحتوى الرئيسي */
         .main-content {
             flex: 1;
             display: flex;
@@ -84,7 +81,6 @@
             font-size: 20px;
             cursor: pointer;
         }
-        /* المحتوى القابل للتمرير */
         .content-wrapper {
             flex: 1;
             padding: 20px;
@@ -110,7 +106,6 @@
             align-items: center;
             gap: 8px;
         }
-        /* الجدول مع تمرير */
         .table-wrapper {
             background: white;
             border-radius: 15px;
@@ -125,7 +120,8 @@
         }
         .data-table th, .data-table td {
             padding: 12px 15px;
-            text-align: right;
+            text-align: center;
+            vertical-align: middle;
             border-bottom: 1px solid #e0e0e0;
         }
         .data-table th {
@@ -133,6 +129,8 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            font-weight: 600;
+            text-align: center;
         }
         .btn-edit {
             background: #f39c12;
@@ -150,7 +148,6 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        /* المودال */
         .modal {
             display: none;
             position: fixed;
@@ -255,7 +252,9 @@
                         <thead>
                             <tr><th>#</th><th>اسم المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>الحد الأدنى</th><th>الباركود</th><th>تاريخ الانتهاء</th><th>الإجراءات</th></tr>
                         </thead>
-                        <tbody id="productsList"></tbody>
+                        <tbody id="productsList">
+                            <tr><td colspan="9" style="text-align:center;">جاري التحميل...</td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -281,6 +280,7 @@
 
     <script>
         let products = [];
+        let currentPharmacyId = null;
         
         // دالة تحميل الشعار واسم الصيدلية
         function loadCompanyInfo() {
@@ -298,21 +298,36 @@
             }
         }
         
-        // تم تعديل هذه الدالة - إزالة البيانات التجريبية
-        function loadProducts() {
-            const stored = localStorage.getItem('products');
-            if (stored) {
-                products = JSON.parse(stored);
-            } else {
-                products = [];
-                localStorage.setItem('products', JSON.stringify(products));
+        // تحميل المنتجات من Firebase
+        async function loadProducts() {
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                console.log("No user logged in");
+                return;
             }
-            displayProducts();
+            
+            currentPharmacyId = user.uid;
+            const productsRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('products');
+            
+            try {
+                const snapshot = await productsRef.get();
+                products = [];
+                snapshot.forEach(doc => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                displayProducts();
+            } catch (error) {
+                console.error("Error loading products:", error);
+                alert("خطأ في تحميل المنتجات");
+            }
         }
         
         function displayProducts() {
             const tbody = document.getElementById('productsList');
-            if (!products.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات</td><tr>'; return; }
+            if (!products.length) { 
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات</td></tr>'; 
+                return; 
+            }
             let html = '';
             products.forEach((p, i) => {
                 const lowStockClass = p.quantity <= p.minStock ? 'text-danger' : '';
@@ -326,8 +341,8 @@
                     <td>${p.barcode || '-'}</td>
                     <td>${p.expiryDate || '-'}</td>
                     <td>
-                        <button class="btn-edit" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i></button>
-                        <button class="btn-delete" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+                        <button class="btn-edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             });
@@ -353,7 +368,7 @@
             document.getElementById('productModal').classList.add('active');
         }
         
-        function saveProduct() {
+        async function saveProduct() {
             const id = document.getElementById('productId').value;
             const name = document.getElementById('productName').value.trim();
             if (!name) { alert('⚠️ اسم المنتج مطلوب'); return; }
@@ -365,23 +380,38 @@
             const barcode = document.getElementById('barcode').value;
             const expiryDate = document.getElementById('expiryDate').value;
             
-            if (id === '') {
-                const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
-                products.push({ id: newId, name, purchasePrice, sellingPrice, quantity, minStock, barcode, expiryDate });
-                alert('✅ تم إضافة المنتج');
-            } else {
-                const index = products.findIndex(p => p.id == id);
-                if (index !== -1) {
-                    products[index] = { ...products[index], name, purchasePrice, sellingPrice, quantity, minStock, barcode, expiryDate };
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("الرجاء تسجيل الدخول أولاً");
+                return;
+            }
+            
+            const productsRef = firebase.firestore().collection('pharmacies').doc(user.uid).collection('products');
+            
+            try {
+                if (id === '') {
+                    // إضافة منتج جديد
+                    const newId = Date.now().toString();
+                    await productsRef.doc(newId).set({
+                        name, purchasePrice, sellingPrice, quantity, minStock, barcode, expiryDate
+                    });
+                    alert('✅ تم إضافة المنتج');
+                } else {
+                    // تعديل منتج
+                    await productsRef.doc(id).update({
+                        name, purchasePrice, sellingPrice, quantity, minStock, barcode, expiryDate
+                    });
                     alert('✅ تم تعديل المنتج');
                 }
+                closeModal();
+                await loadProducts();
+            } catch(error) {
+                console.error("Error saving product:", error);
+                alert("خطأ في حفظ المنتج");
             }
-            localStorage.setItem('products', JSON.stringify(products));
-            closeModal();
-            loadProducts();
         }
         
-        function editProduct(id) {
+        async function editProduct(id) {
             const p = products.find(p => p.id === id);
             if (!p) return;
             document.getElementById('modalTitle').innerHTML = '✏️ تعديل المنتج';
@@ -396,11 +426,25 @@
             document.getElementById('productModal').classList.add('active');
         }
         
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذا المنتج؟')) return;
-            products = products.filter(p => p.id !== id);
-            localStorage.setItem('products', JSON.stringify(products));
-            loadProducts();
+            
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("الرجاء تسجيل الدخول أولاً");
+                return;
+            }
+            
+            const productsRef = firebase.firestore().collection('pharmacies').doc(user.uid).collection('products');
+            
+            try {
+                await productsRef.doc(id).delete();
+                alert('✅ تم حذف المنتج');
+                await loadProducts();
+            } catch(error) {
+                console.error("Error deleting product:", error);
+                alert("خطأ في حذف المنتج");
+            }
         }
         
         function closeModal() { document.getElementById('productModal').classList.remove('active'); }
@@ -421,10 +465,18 @@
         
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
         
+        // التحقق من تسجيل الدخول وتحميل البيانات
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
-        loadProducts();
-        loadCompanyInfo();
+        
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                loadProducts();
+                loadCompanyInfo();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
     </script>
 </body>
 </html>
