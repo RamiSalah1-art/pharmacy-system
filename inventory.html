@@ -6,7 +6,6 @@
     <title>المخزون - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -373,8 +372,12 @@
         let currentPharmacyId = null;
         
         function loadCompanyInfo() {
+            // التحقق من وجود العنصر قبل التعديل
             const nameHeader = document.getElementById('pharmacyNameHeader');
-            if (!nameHeader) return; // منع الخطأ إذا العنصر غير موجود
+            if (!nameHeader) {
+                console.warn("pharmacyNameHeader not found yet");
+                return;
+            }
             
             const savedLogo = localStorage.getItem('pharmacyLogo');
             const sidebarLogo = document.getElementById('sidebarLogo');
@@ -409,7 +412,7 @@
         function displayProducts() {
             const tbody = document.getElementById('productsList');
             if (!products.length) {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات<\/td><\/tr>';
+                tbody.innerHTML = '<td><td colspan="9" style="text-align:center;">لا توجد منتجات<\/td><\/tr>';
                 return;
             }
             let html = '';
@@ -528,10 +531,16 @@
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 loadProducts();
-                setTimeout(() => loadCompanyInfo(), 100);
+                // تأخير صغير للتأكد من وجود العنصر
+                setTimeout(() => loadCompanyInfo(), 200);
             } else {
                 window.location.href = 'index.html';
             }
+        });
+        
+        // محاولة إضافية بعد تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(loadCompanyInfo, 100);
         });
     </script>
 </body>
