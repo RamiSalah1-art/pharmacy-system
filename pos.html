@@ -6,6 +6,26 @@
     <title>نقطة البيع - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6xbkAe6MqNc-gKg-uHU4TpEdHVb0HYaI",
+            authDomain: "pharmacy-system-cafdf.firebaseapp.com",
+            projectId: "pharmacy-system-cafdf",
+            storageBucket: "pharmacy-system-cafdf.firebasestorage.app",
+            messagingSenderId: "802316904728",
+            appId: "1:802316904728:web:84757a51b203aed94d166d"
+        };
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log("✅ Firebase initialized");
+        }
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -318,9 +338,64 @@
         </main>
     </div>
 
-    <!-- نافذة الدفع (نفسها بدون تغيير) -->
-    <div id="paymentModal" class="modal">... (كما هي)</div>
-    <div id="addCustomerModal" class="modal">... (كما هي)</div>
+    <!-- نافذة الدفع -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💰 إتمام عملية البيع</h3>
+                <button onclick="closePaymentModal()" style="background:none;border:none;color:white;font-size:24px;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>👤 اختيار العميل</label>
+                    <select id="customerSelect">
+                        <option value="cash">🔄 نقدي (بدون عميل)</option>
+                    </select>
+                    <button class="btn-add-customer" onclick="openAddCustomerModal()">+ إضافة عميل جديد</button>
+                </div>
+                <div class="form-group">
+                    <label>💳 طريقة الدفع</label>
+                    <div class="payment-methods">
+                        <div class="payment-method" data-method="cash">💰 نقدي</div>
+                        <div class="payment-method" data-method="bank">🏦 تحويل بنكي</div>
+                    </div>
+                </div>
+                <div id="bankDetails" style="display: none;">
+                    <div class="form-group"><label>🏦 اسم البنك</label><input type="text" id="bankName" placeholder="مثال: بنك الخرطوم"></div>
+                    <div class="form-group"><label>📝 رقم الحوالة</label><input type="text" id="transferNumber" placeholder="أدخل رقم الحوالة"></div>
+                    <div class="form-group"><label>👤 اسم المحول</label><input type="text" id="transferName" placeholder="اسم الشخص المحول"></div>
+                </div>
+                <div class="form-group"><label>📝 ملاحظات</label><input type="text" id="paymentNotes" placeholder="ملاحظات إضافية"></div>
+                <div class="invoice-summary" style="background:#f8f9fa;padding:12px;border-radius:8px;">
+                    <div><span>عدد الأصناف:</span><span id="summaryItemCount">0</span></div>
+                    <div><span>الإجمالي:</span><span id="summaryTotal">0 ج.س</span></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closePaymentModal()" style="background:#95a5a6;color:white;padding:10px 20px;border:none;border-radius:8px;">إلغاء</button>
+                <button id="confirmSaleBtn" style="background:#27ae60;color:white;padding:10px 20px;border:none;border-radius:8px;">تأكيد البيع</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة عميل جديد -->
+    <div id="addCustomerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ إضافة عميل جديد</h3>
+                <button onclick="closeAddCustomerModal()" style="background:none;border:none;color:white;font-size:24px;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>اسم العميل *</label><input type="text" id="newCustomerName" placeholder="أدخل اسم العميل"></div>
+                <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="newCustomerPhone" placeholder="رقم الهاتف"></div>
+                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="newCustomerEmail" placeholder="البريد الإلكتروني"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeAddCustomerModal()" style="background:#95a5a6;color:white;padding:10px 20px;border:none;border-radius:8px;">إلغاء</button>
+                <button onclick="saveNewCustomer()" style="background:#27ae60;color:white;padding:10px 20px;border:none;border-radius:8px;">حفظ العميل</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let products = [];
@@ -330,7 +405,6 @@
         let selectedPaymentMethod = 'cash';
         let currentPharmacyId = null;
 
-        // دالة تحميل الشعار واسم الصيدلية (من localStorage مؤقتاً)
         function loadCompanyInfo() {
             const savedLogo = localStorage.getItem('pharmacyLogo');
             if (savedLogo) {
@@ -348,27 +422,18 @@
 
         function getCompanyData() {
             const savedData = localStorage.getItem('companyData');
-            if (savedData) {
-                return JSON.parse(savedData);
-            }
+            if (savedData) return JSON.parse(savedData);
             return { pharmacyName: '', commercialRegister: '', taxNumber: '', phone: '', email: '', address: '', website: '' };
         }
 
         function formatQRText() {
             const data = getCompanyData();
-            let parts = [];
-            if (data.pharmacyName) parts.push(data.pharmacyName);
-            if (data.commercialRegister) parts.push(`سجل:${data.commercialRegister}`);
-            if (data.taxNumber) parts.push(`ضريبي:${data.taxNumber}`);
-            if (data.phone) parts.push(data.phone);
-            if (data.address) parts.push(data.address);
-            if (parts.length === 0) return 'بيانات الصيدلية';
-            if (parts.join(' | ').length > 100) return parts[0];
-            return parts.join(' | ');
+            if (data.pharmacyName) return data.pharmacyName;
+            return 'بيانات الصيدلية';
         }
 
-        // تحميل المنتجات من Firebase
         async function loadProducts() {
+            if (typeof firebase === 'undefined') { setTimeout(loadProducts, 200); return; }
             const user = firebase.auth().currentUser;
             if (!user) return;
             currentPharmacyId = user.uid;
@@ -444,6 +509,7 @@
         }
 
         async function loadCustomersToSelect() {
+            if (typeof firebase === 'undefined') return;
             const user = firebase.auth().currentUser;
             if (!user) return;
             const customersRef = firebase.firestore().collection('pharmacies').doc(user.uid).collection('customers');
@@ -502,7 +568,6 @@
             }
             const notes = document.getElementById('paymentNotes').value;
 
-            // تحديث المخزون في Firebase
             const productsRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('products');
             for (const item of cart) {
                 const productDoc = await productsRef.doc(item.id).get();
@@ -510,7 +575,6 @@
                 await productsRef.doc(item.id).update({ quantity: newQuantity });
             }
 
-            // تحديث إجمالي مشتريات العميل في Firebase
             if (customerId) {
                 const customersRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('customers');
                 const customerDoc = await customersRef.doc(customerId).get();
@@ -518,7 +582,6 @@
                 await customersRef.doc(customerId).update({ totalSpent: currentTotal + total });
             }
 
-            // حفظ الفاتورة في Firebase
             const invoicesRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('invoices');
             const newInvoice = {
                 number: `INV-${new Date().getFullYear()}-${Date.now()}`,
@@ -538,7 +601,7 @@
             alert(`✅ تم إتمام البيع\nرقم الفاتورة: ${newInvoice.number}\nالمبلغ: ${total} ج.س`);
             cart = [];
             updateCart();
-            await loadProducts(); // تحديث المنتجات من Firebase بعد البيع
+            await loadProducts();
             closePaymentModal();
         }
 
@@ -568,7 +631,7 @@
             let itemsHtml = '';
             invoice.items.forEach(item => {
                 itemsHtml += `<tr>
-                    <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:right;">${item.name}</td>
+                    <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:right;">${item.name}<td>
                     <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${item.quantity}</td>
                     <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${item.price.toFixed(2)}</td>
                     <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${item.total.toFixed(2)}</td>
@@ -583,7 +646,6 @@
                     <meta charset="UTF-8">
                     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"><\/script>
                     <style>
-                        /* نفس الاستايلات القديمة */
                         * { margin: 0; padding: 0; box-sizing: border-box; }
                         body { font-family: 'Cairo', 'Tahoma', sans-serif; background: #fff; padding: 15px; margin: 0; }
                         .invoice-wrapper { max-width: 350px; margin: 0 auto; background: white; }
@@ -617,45 +679,26 @@
                         <div class="footer">${companyData.pharmacyName || 'نظام الصيدليات'}<br>شكراً لثقتكم</div>
                     </div>
                     <script>
-                        (function() {
-                            let attempts = 0;
-                            function generateQR() {
-                                var container = document.getElementById('printQRCode');
-                                if (!container && attempts < 15) { attempts++; setTimeout(generateQR, 150); return; }
-                                if (!container) return;
-                                try {
-                                    var qrText = ${JSON.stringify(qrTextShort)};
-                                    if (qrText && qrText !== 'بيانات الصيدلية' && qrText.length > 0) {
-                                        container.innerHTML = '';
-                                        var qr = qrcode(0, 'M');
-                                        qr.addData(qrText);
-                                        qr.make();
-                                        var cellSize = 4, margin = 4;
-                                        var canvas = document.createElement('canvas');
-                                        canvas.width = qr.getModuleCount() * cellSize + margin * 2;
-                                        canvas.height = qr.getModuleCount() * cellSize + margin * 2;
-                                        canvas.style.width = '120px';
-                                        canvas.style.height = 'auto';
-                                        var ctx = canvas.getContext('2d');
-                                        ctx.fillStyle = '#ffffff';
-                                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                                        ctx.fillStyle = '#000000';
-                                        for (var row = 0; row < qr.getModuleCount(); row++) {
-                                            for (var col = 0; col < qr.getModuleCount(); col++) {
-                                                if (qr.isDark(row, col)) {
-                                                    ctx.fillRect(col * cellSize + margin, row * cellSize + margin, cellSize, cellSize);
-                                                }
-                                            }
-                                        }
-                                        container.appendChild(canvas);
-                                    } else {
-                                        container.innerHTML = '<div style="font-size:12px;color:#2c7da0;">${companyData.pharmacyName || "بيانات الصيدلية"}</div>';
-                                    }
-                                } catch(e) { console.log('QR Error:', e); if (container) container.innerHTML = '<div style="font-size:12px;color:#2c7da0;">شكراً لكم</div>'; }
+                        setTimeout(() => {
+                            const container = document.getElementById('printQRCode');
+                            if(container && ${JSON.stringify(qrTextShort)} && ${JSON.stringify(qrTextShort)} !== 'بيانات الصيدلية') {
+                                const qr = qrcode(0, 'M');
+                                qr.addData(${JSON.stringify(qrTextShort)});
+                                qr.make();
+                                const canvas = document.createElement('canvas');
+                                canvas.width = qr.getModuleCount() * 4 + 8;
+                                canvas.height = qr.getModuleCount() * 4 + 8;
+                                canvas.style.width = '120px';
+                                const ctx = canvas.getContext('2d');
+                                ctx.fillStyle = '#fff';
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                ctx.fillStyle = '#000';
+                                for(let r=0; r<qr.getModuleCount(); r++)
+                                    for(let c=0; c<qr.getModuleCount(); c++)
+                                        if(qr.isDark(r,c)) ctx.fillRect(c*4+4, r*4+4, 4, 4);
+                                container.appendChild(canvas);
                             }
-                            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', generateQR);
-                            else generateQR();
-                        })();
+                        }, 100);
                     <\/script>
                 </body>
                 </html>
@@ -675,20 +718,29 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
-        document.getElementById('searchInput').addEventListener('input', handleSearch);
-        document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
-        document.querySelectorAll('.search-type-btn').forEach(btn => btn.addEventListener('click', () => setSearchType(btn.dataset.type)));
-        document.getElementById('checkoutBtn').addEventListener('click', openPaymentModal);
-        document.getElementById('confirmSaleBtn').addEventListener('click', completeSale);
-        document.querySelectorAll('.payment-method').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectedPaymentMethod = btn.dataset.method;
-                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
-                btn.classList.add('selected');
-                document.getElementById('bankDetails').style.display = selectedPaymentMethod === 'bank' ? 'block' : 'none';
+        // ربط الأحداث بعد تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            const confirmBtn = document.getElementById('confirmSaleBtn');
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            
+            if(searchInput) searchInput.addEventListener('input', handleSearch);
+            if(clearBtn) clearBtn.addEventListener('click', clearSearch);
+            if(checkoutBtn) checkoutBtn.addEventListener('click', openPaymentModal);
+            if(confirmBtn) confirmBtn.addEventListener('click', completeSale);
+            
+            paymentMethods.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedPaymentMethod = btn.dataset.method;
+                    paymentMethods.forEach(m => m.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    const bankDetails = document.getElementById('bankDetails');
+                    if(bankDetails) bankDetails.style.display = selectedPaymentMethod === 'bank' ? 'block' : 'none';
+                });
             });
         });
-        document.querySelector('.payment-method[data-method="cash"]').classList.add('selected');
 
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
