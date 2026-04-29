@@ -6,6 +6,26 @@
     <title>الفواتير - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6xbkAe6MqNc-gKg-uHU4TpEdHVb0HYaI",
+            authDomain: "pharmacy-system-cafdf.firebaseapp.com",
+            projectId: "pharmacy-system-cafdf",
+            storageBucket: "pharmacy-system-cafdf.firebasestorage.app",
+            messagingSenderId: "802316904728",
+            appId: "1:802316904728:web:84757a51b203aed94d166d"
+        };
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log("✅ Firebase initialized");
+        }
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -186,7 +206,6 @@
             background: white;
             border-radius: 12px;
         }
-        /* تنسيق الطباعة */
         @media print {
             .sidebar, .top-bar, .filters-bar, .btn-primary, .btn-edit, .btn-delete, .btn-print, .invoice-header, .menu-toggle {
                 display: none !important;
@@ -236,12 +255,12 @@
         </aside>
         <main class="main-content">
             <header class="top-bar">
-                <button class="menu-toggle" onclick="toggleSidebar()">?</button>
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
                 <div><span id="userName"></span> <i class="fas fa-user-circle"></i></div>
             </header>
             <div class="content-wrapper">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h1> الفواتير</h1>
+                    <h1>📄 الفواتير</h1>
                     <a href="pos.html" class="btn-primary"><i class="fas fa-plus"></i> فاتورة جديدة</a>
                 </div>
                 
@@ -262,8 +281,8 @@
 
     <script>
         let allInvoices = [];
+        let currentPharmacyId = null;
         
-        // دوال الشعار وبيانات الشركة
         function loadCompanyData() {
             const savedLogo = localStorage.getItem('pharmacyLogo');
             if (savedLogo) {
@@ -273,7 +292,6 @@
                     sidebarLogo.style.display = 'block';
                 }
             }
-            
             const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
             if (settings.pharmacyName) {
                 document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName;
@@ -285,7 +303,6 @@
             if (savedData) {
                 return JSON.parse(savedData);
             }
-            // بيانات افتراضية إذا مافيش بيانات محفوظة
             return {
                 pharmacyName: '',
                 commercialRegister: '',
@@ -297,7 +314,6 @@
             };
         }
         
-        // نص QR قصير ومناسب (تم التعديل هنا)
         function formatQRText() {
             const data = getCompanyData();
             let parts = [];
@@ -306,39 +322,22 @@
             if (data.address) parts.push(data.address);
             if (data.commercialRegister) parts.push(`سجل:${data.commercialRegister}`);
             if (data.taxNumber) parts.push(`ضريبي:${data.taxNumber}`);
-            
             if (parts.length === 0) return 'بيانات الصيدلية';
             return parts.join(' | ');
         }
         
-        function generateQRCodeForPrint(containerId, size = 100) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            container.innerHTML = '';
-            const qrText = formatQRText();
-            if (qrText && qrText !== 'بيانات الصيدلية') {
-                try {
-                    new QRCode(container, {
-                        text: qrText,
-                        width: size,
-                        height: size,
-                        colorDark: "#000000",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
-                } catch(e) {
-                    console.error('QR Error:', e);
-                    container.innerHTML = '<p style="font-size:12px;color:gray;">خطأ في الباركود</p>';
-                }
-            } else {
-                container.innerHTML = '<p style="font-size:12px;color:gray;">بيانات الشركة</p>';
-            }
-        }
-        
-        function loadInvoices() {
-            const stored = localStorage.getItem('invoices');
-            if (stored) allInvoices = JSON.parse(stored);
-            else allInvoices = [];
+        // تحميل الفواتير من Firebase
+        async function loadInvoices() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            currentPharmacyId = user.uid;
+            
+            const invoicesRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('invoices');
+            const snapshot = await invoicesRef.get();
+            allInvoices = [];
+            snapshot.forEach(doc => {
+                allInvoices.push({ id: doc.id, ...doc.data() });
+            });
             displayInvoices(allInvoices);
             loadCompanyData();
         }
@@ -376,10 +375,10 @@
                                         ${inv.items && inv.items.length > 0 ? inv.items.map(item => `
                                         <tr>
                                             <td>${item.name}</td>
-                                            <td>${item.quantity}</td>
+                                            <td>${item.quantity}<td>
                                             <td>${item.price.toFixed(2)} ج.س</td>
                                             <td>${(item.price * item.quantity).toFixed(2)} ج.س</td>
-                                        </tr>`).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td></tr>'}
+                                        </tr>`).join('') : '<tr><td colspan="4">لا توجد تفاصيل</td>｜｜DSML｜｜'}
                                     </tbody>
                                 </table>
                             </div>
@@ -403,26 +402,32 @@
             if (content) content.classList.toggle('show');
         }
         
-        function editInvoice(index) {
+        async function editInvoice(index) {
             const inv = allInvoices[index];
             if (!inv) return;
             const newCustomer = prompt('تعديل اسم العميل:', inv.customerName);
             if (newCustomer !== null) inv.customerName = newCustomer || 'نقدي';
             const newNotes = prompt('تعديل الملاحظات:', inv.notes || '');
             if (newNotes !== null) inv.notes = newNotes;
-            localStorage.setItem('invoices', JSON.stringify(allInvoices));
-            displayInvoices(allInvoices);
-            alert('? تم تعديل الفاتورة بنجاح');
+            
+            const invoicesRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('invoices');
+            await invoicesRef.doc(inv.id).update({
+                customerName: inv.customerName,
+                notes: inv.notes
+            });
+            await loadInvoices();
+            alert('✅ تم تعديل الفاتورة بنجاح');
         }
         
-        function deleteInvoice(index) {
-            if (!confirm('?? هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
+        async function deleteInvoice(index) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
             const invoice = allInvoices[index];
             const invoiceNumber = invoice ? invoice.number : 'الفاتورة';
-            allInvoices.splice(index, 1);
-            localStorage.setItem('invoices', JSON.stringify(allInvoices));
-            displayInvoices(allInvoices);
-            alert(`? تم حذف ${invoiceNumber} بنجاح`);
+            
+            const invoicesRef = firebase.firestore().collection('pharmacies').doc(currentPharmacyId).collection('invoices');
+            await invoicesRef.doc(invoice.id).delete();
+            await loadInvoices();
+            alert(`✅ تم حذف ${invoiceNumber} بنجاح`);
         }
         
         function printInvoice(index) {
@@ -436,13 +441,11 @@
             const date = new Date(inv.date);
             const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
             
-            // بناء HTML للطباعة مع الشعار و QR Code
             let logoHtml = '';
             if (savedLogo) {
                 logoHtml = `<img src="${savedLogo}" style="max-width: 120px; max-height: 80px; margin-bottom: 10px;">`;
             }
             
-            // بناء بيانات الشركة HTML (نص قصير)
             let companyInfoHtml = '';
             if (companyData.pharmacyName) companyInfoHtml += `<div><strong>${companyData.pharmacyName}</strong></div>`;
             if (companyData.commercialRegister) companyInfoHtml += `<div>سجل تجاري: ${companyData.commercialRegister}</div>`;
@@ -569,7 +572,6 @@
                         </div>
                     </div>
                     <script>
-                        // توليد QR Code بعد تحميل الصفحة
                         setTimeout(() => {
                             const qrText = ${JSON.stringify(qrTextShort)};
                             const qrContainer = document.getElementById('printQRCode');
@@ -627,7 +629,14 @@
         
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
-        loadInvoices();
+        
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                loadInvoices();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
     </script>
 </body>
 </html>
