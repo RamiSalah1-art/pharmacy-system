@@ -185,6 +185,7 @@
             border: none;
             cursor: pointer;
             padding: 5px;
+            margin-right: 5px;
         }
         .cart-total {
             background: #f8f9fa;
@@ -460,15 +461,36 @@
             grid.innerHTML = html;
         }
 
+        // ===== تم تعديل هذه الدوال =====
         function addToCart(id) {
             const product = products.find(p => p.id === id);
-            if (!product || product.quantity <= 0) { alert('⚠️ المنتج غير متوفر'); return; }
+            if (!product || product.quantity <= 0) { 
+                alert('⚠️ المنتج غير متوفر'); 
+                return; 
+            }
+            
+            let quantity = prompt(`أدخل الكمية المطلوبة من ${product.name}:`, 1);
+            if (quantity === null) return;
+            
+            quantity = parseInt(quantity);
+            if (isNaN(quantity) || quantity <= 0) {
+                alert('⚠️ الكمية غير صحيحة');
+                return;
+            }
+            if (quantity > product.quantity) {
+                alert(`⚠️ الكمية غير متوفرة، المتوفر فقط ${product.quantity}`);
+                return;
+            }
+            
             const existing = cart.find(item => item.id === id);
             if (existing) {
-                if (existing.quantity + 1 > product.quantity) { alert('⚠️ الكمية غير متوفرة'); return; }
-                existing.quantity++;
+                if (existing.quantity + quantity > product.quantity) {
+                    alert(`⚠️ الكمية غير متوفرة، المتوفر فقط ${product.quantity}`);
+                    return;
+                }
+                existing.quantity += quantity;
             } else {
-                cart.push({ id: product.id, name: product.name, price: product.sellingPrice, quantity: 1 });
+                cart.push({ id: product.id, name: product.name, price: product.sellingPrice, quantity: quantity });
             }
             updateCart();
         }
@@ -476,26 +498,50 @@
         function updateCart() {
             const cartDiv = document.getElementById('cartItems');
             const totalDiv = document.getElementById('cartTotal');
-            if (cart.length === 0) { cartDiv.innerHTML = '<div style="text-align:center;padding:40px;">🛒 السلة فارغة</div>'; totalDiv.style.display = 'none'; return; }
+            if (cart.length === 0) { 
+                cartDiv.innerHTML = '<div style="text-align:center;padding:40px;">🛒 السلة فارغة</div>'; 
+                totalDiv.style.display = 'none'; 
+                return; 
+            }
             let total = 0;
             let html = '';
             cart.forEach((item, idx) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
-                html += `<div class="cart-item"><div><strong>${item.name}</strong><br>${item.quantity} × ${item.price} ج.س</div><div>${itemTotal} ج.س</div><div class="cart-item-actions"><button onclick="updateQuantity(${idx}, ${item.quantity - 1})">-</button><button onclick="updateQuantity(${idx}, ${item.quantity + 1})">+</button><button onclick="removeFromCart(${idx})">🗑️</button></div></div>`;
+                html += `
+                    <div class="cart-item">
+                        <div><strong>${item.name}</strong><br>الكمية: ${item.quantity} × ${item.price} ج.س</div>
+                        <div>${itemTotal} ج.س</div>
+                        <div class="cart-item-actions">
+                            <button onclick="editQuantity(${idx})">📝 تعديل</button>
+                            <button onclick="removeFromCart(${idx})">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
             });
             cartDiv.innerHTML = html;
             totalDiv.style.display = 'block';
             document.getElementById('cartTotalAmount').innerHTML = total;
         }
 
-        function updateQuantity(idx, newQty) {
-            if (newQty <= 0) { removeFromCart(idx); return; }
-            const product = products.find(p => p.id === cart[idx].id);
-            if (newQty > product.quantity) { alert('⚠️ الكمية غير متوفرة'); return; }
-            cart[idx].quantity = newQty;
+        function editQuantity(idx) {
+            const item = cart[idx];
+            const product = products.find(p => p.id === item.id);
+            let newQty = prompt(`أدخل الكمية الجديدة لـ ${item.name}:`, item.quantity);
+            if (newQty === null) return;
+            newQty = parseInt(newQty);
+            if (isNaN(newQty) || newQty <= 0) {
+                alert('⚠️ الكمية غير صحيحة');
+                return;
+            }
+            if (newQty > product.quantity) {
+                alert(`⚠️ الكمية غير متوفرة، المتوفر فقط ${product.quantity}`);
+                return;
+            }
+            item.quantity = newQty;
             updateCart();
         }
+        // ===== انتهى التعديل =====
 
         function removeFromCart(idx) { cart.splice(idx, 1); updateCart(); }
 
@@ -631,7 +677,7 @@
             let itemsHtml = '';
             invoice.items.forEach(item => {
                 itemsHtml += `<tr>
-                    <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:right;">${item.name}<td>
+                    <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:right;">${item.name}</td>
                     <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${item.quantity}</td>
                     <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${item.price.toFixed(2)}</td>
                     <td style="padding:6px 4px;border:1px solid #dee2e6;text-align:center;">${item.total.toFixed(2)}</td>
@@ -718,7 +764,6 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
-        // ربط الأحداث بعد تحميل الصفحة
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearchBtn');
