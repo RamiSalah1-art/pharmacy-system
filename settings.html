@@ -432,42 +432,37 @@
             } else { qrContainer.innerHTML = '<p style="color:gray;">أدخل بيانات الصيدلية لظهور QR Code</p>'; }
         }
         
-        // ========== الدالة المعدلة الأساسية ==========
         async function saveCompanyInfo() {
             const companyData = getCompanyData();
             
             // 1. حفظ في localStorage
             localStorage.setItem('companyData', JSON.stringify(companyData));
             
-            // 2. حفظ في pharmacySettings (للاستخدام في باقي الصفحات)
+            // 2. حفظ في pharmacySettings
             const currentSettings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
             currentSettings.pharmacyName = companyData.pharmacyName;
             localStorage.setItem('pharmacySettings', JSON.stringify(currentSettings));
             
-            // 3. تحديث اسم الصيدلية في Firebase (المصدر الرئيسي)
+            // 3. حفظ في Firebase (مهم!)
             const user = auth.currentUser;
             if (user) {
                 const pharmacyRef = db.collection('pharmacies').doc(user.uid);
                 try {
-                    await pharmacyRef.update({ name: companyData.pharmacyName });
-                    console.log("✅ تم تحديث اسم الصيدلية في Firebase");
+                    await pharmacyRef.set({ name: companyData.pharmacyName, ...companyData }, { merge: true });
+                    console.log("✅ تم حفظ الإعدادات في Firebase");
                 } catch (error) {
-                    // إذا لم يكن المستند موجوداً، نقوم بإنشائه
-                    await pharmacyRef.set({ name: companyData.pharmacyName });
-                    console.log("✅ تم إنشاء مستند الصيدلية في Firebase");
+                    console.error("خطأ في حفظ Firebase:", error);
                 }
             }
             
             // 4. تحديث الواجهة
-            if (companyData.pharmacyName) {
-                document.getElementById('pharmacyNameHeader').innerHTML = companyData.pharmacyName;
-            }
-            
+            document.getElementById('pharmacyNameHeader').innerHTML = companyData.pharmacyName;
             updateCompanyInfoDisplay();
             generateQRCode();
+            
+            // 5. إشعار للمستخدم
             alert('✅ تم حفظ بيانات الصيدلية وتحديث QR Code');
         }
-        // ===========================================
         
         function loadCompanyData() {
             const savedData = localStorage.getItem('companyData');
