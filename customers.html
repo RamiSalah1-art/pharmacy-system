@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>العملاء - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK - تم الترتيب الصحيح -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <!-- ملف الإعدادات الخاص بك -->
     <script src="js/firebase-config.js"></script>
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -206,7 +205,6 @@
     </style>
 </head>
 <body>
-    <!-- باقي محتوى الصفحة كما هو دون تغيير -->
     <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
@@ -285,6 +283,11 @@
         }
 
         async function loadCustomers() {
+            if (typeof firebase === 'undefined') {
+                console.error("Firebase still not loaded, check network/console");
+                alert("Firebase not loaded. Check connection.");
+                return;
+            }
             const user = firebase.auth().currentUser;
             if (!user) {
                 console.log("No user logged in");
@@ -303,7 +306,7 @@
                 displayCustomers();
             } catch (error) {
                 console.error("Error loading customers:", error);
-                alert("خطأ في تحميل العملاء");
+                alert("خطأ في تحميل العملاء: " + error.message);
             }
         }
 
@@ -342,6 +345,7 @@
         }
 
         async function saveCustomer() {
+            if (typeof firebase === 'undefined') { alert("Firebase not loaded"); return; }
             const id = document.getElementById('customerId').value;
             const name = document.getElementById('customerName').value.trim();
             if (!name) { alert('⚠️ اسم العميل مطلوب'); return; }
@@ -374,7 +378,7 @@
                 await loadCustomers();
             } catch(error) {
                 console.error("Error saving customer:", error);
-                alert("خطأ في حفظ العميل");
+                alert("خطأ في حفظ العميل: " + error.message);
             }
         }
 
@@ -392,7 +396,7 @@
 
         async function deleteCustomer(id) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذا العميل؟')) return;
-            
+            if (typeof firebase === 'undefined') { alert("Firebase not loaded"); return; }
             const user = firebase.auth().currentUser;
             if (!user) {
                 alert("الرجاء تسجيل الدخول أولاً");
@@ -407,7 +411,7 @@
                 await loadCustomers();
             } catch(error) {
                 console.error("Error deleting customer:", error);
-                alert("خطأ في حذف العميل");
+                alert("خطأ في حذف العميل: " + error.message);
             }
         }
 
@@ -432,14 +436,22 @@
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         if (!sessionStorage.getItem('loggedIn')) window.location.href = 'index.html';
         
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                loadCustomers();
-                loadCompanyInfo();
+        // تأخير طفيف للتأكد من تحميل Firebase
+        setTimeout(() => {
+            if (typeof firebase !== 'undefined') {
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (user) {
+                        loadCustomers();
+                        loadCompanyInfo();
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                });
             } else {
-                window.location.href = 'index.html';
+                console.error("Firebase still not defined after timeout");
+                alert("خطأ في تحميل Firebase. الرجاء تحديث الصفحة.");
             }
-        });
+        }, 100);
     </script>
 </body>
 </html>
