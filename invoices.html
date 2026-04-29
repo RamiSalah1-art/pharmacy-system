@@ -412,17 +412,17 @@
             if (newNotes !== null) inv.notes = newNotes;
             localStorage.setItem('invoices', JSON.stringify(allInvoices));
             displayInvoices(allInvoices);
-            alert('? تم تعديل الفاتورة بنجاح');
+            alert(' تم تعديل الفاتورة بنجاح');
         }
         
         function deleteInvoice(index) {
-            if (!confirm('?? هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
+            if (!confirm(' هل أنت متأكد من حذف هذه الفاتورة؟\nلا يمكن استرجاعها بعد الحذف.')) return;
             const invoice = allInvoices[index];
             const invoiceNumber = invoice ? invoice.number : 'الفاتورة';
             allInvoices.splice(index, 1);
             localStorage.setItem('invoices', JSON.stringify(allInvoices));
             displayInvoices(allInvoices);
-            alert(`? تم حذف ${invoiceNumber} بنجاح`);
+            alert(` تم الحذف ${invoiceNumber} بنجاح`);
         }
         
         function printInvoice(index) {
