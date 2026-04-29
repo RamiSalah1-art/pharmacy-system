@@ -9,7 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <!-- استخدام مكتبة QRCode حديثة وقوية -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -255,7 +254,6 @@
             <div class="content-wrapper">
                 <div class="settings-container">
                     
-                    <!-- ===== قسم رفع الشعار ===== -->
                     <div class="settings-card">
                         <h2><i class="fas fa-image"></i> شعار الصيدلية</h2>
                         <div class="form-group">
@@ -271,7 +269,6 @@
                         </div>
                     </div>
                     
-                    <!-- ===== معلومات الصيدلية (موحدة + سجل تجاري + رقم ضريبي) ===== -->
                     <div class="settings-card">
                         <h2><i class="fas fa-store"></i> معلومات الصيدلية والبيانات الرسمية</h2>
                         <div class="form-group">
@@ -291,17 +288,13 @@
                         
                         <button id="saveCompanyInfoBtn" class="btn-secondary">💾 حفظ بيانات الصيدلية</button>
                         
-                        <!-- معاينة البيانات للـ QR -->
                         <h3 style="margin-top: 25px; font-size: 16px;">بيانات الشركة التي ستظهر في QR Code:</h3>
-                        <div class="company-info-display" id="companyInfoDisplay">
-                            <!-- ستظهر البيانات هنا ديناميكياً -->
-                        </div>
+                        <div class="company-info-display" id="companyInfoDisplay"></div>
                         
                         <h3 style="margin-top: 15px; font-size: 16px;">معاينة QR Code:</h3>
                         <div id="qrcodePreview" class="qr-preview"></div>
                     </div>
                     
-                    <!-- إعدادات العملة -->
                     <div class="settings-card">
                         <h2><i class="fas fa-money-bill-wave"></i> إعدادات العملة</h2>
                         <div class="form-row">
@@ -310,7 +303,6 @@
                         </div>
                     </div>
                     
-                    <!-- إدارة المستخدمين -->
                     <div class="settings-card">
                         <h2><i class="fas fa-users"></i> إدارة المستخدمين</h2>
                         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
@@ -355,7 +347,6 @@
         let currentPharmacyId = null;
         let pharmacyUsers = [];
         
-        // ===== دوال الشعار =====
         function saveLogoToLocalStorage() {
             const fileInput = document.getElementById('logoUpload');
             const file = fileInput.files[0];
@@ -389,7 +380,6 @@
                 previewImg.style.display = 'none';
                 previewImg.src = '';
             }
-            
             const sidebarLogo = document.getElementById('sidebarLogo');
             if (sidebarLogo) {
                 if (logoData) {
@@ -403,12 +393,9 @@
         
         function loadSavedLogo() {
             const savedLogo = localStorage.getItem('pharmacyLogo');
-            if (savedLogo) {
-                displayLogoEverywhere(savedLogo);
-            }
+            if (savedLogo) displayLogoEverywhere(savedLogo);
         }
         
-        // ===== دوال بيانات الشركة الموحدة =====
         function getCompanyData() {
             return {
                 pharmacyName: document.getElementById('pharmacyName').value,
@@ -449,50 +436,33 @@
             displayDiv.innerHTML = html;
         }
         
-        // دالة إنشاء QR Code باستخدام مكتبة qrcode-generator الحديثة
         function generateQRCode() {
             const qrContainer = document.getElementById('qrcodePreview');
             if (!qrContainer) return;
-            
             qrContainer.innerHTML = '';
             const qrText = formatQRText();
-            
             if (qrText && qrText !== 'بيانات الصيدلية') {
                 try {
-                    // استخدام qrcode-generator التي ليس لها حد أقصى
                     const qr = qrcode(0, 'M');
                     qr.addData(qrText);
                     qr.make();
-                    
                     const cellSize = 4;
                     const margin = 4;
-                    const qrWidth = qr.getModuleCount() * cellSize + margin * 2;
-                    const qrHeight = qr.getModuleCount() * cellSize + margin * 2;
-                    
                     const canvas = document.createElement('canvas');
-                    canvas.width = qrWidth;
-                    canvas.height = qrHeight;
+                    canvas.width = qr.getModuleCount() * cellSize + margin * 2;
+                    canvas.height = qr.getModuleCount() * cellSize + margin * 2;
                     canvas.style.width = '150px';
-                    canvas.style.height = 'auto';
-                    
                     const ctx = canvas.getContext('2d');
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, qrWidth, qrHeight);
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.fillStyle = '#000000';
-                    
                     for (let row = 0; row < qr.getModuleCount(); row++) {
                         for (let col = 0; col < qr.getModuleCount(); col++) {
                             if (qr.isDark(row, col)) {
-                                ctx.fillRect(
-                                    col * cellSize + margin,
-                                    row * cellSize + margin,
-                                    cellSize,
-                                    cellSize
-                                );
+                                ctx.fillRect(col * cellSize + margin, row * cellSize + margin, cellSize, cellSize);
                             }
                         }
                     }
-                    
                     qrContainer.appendChild(canvas);
                 } catch(e) {
                     console.error('QR Error:', e);
@@ -503,11 +473,30 @@
             }
         }
         
-        function saveCompanyInfo() {
+        // ===== الدالة المعدلة: تحفظ البيانات في localStorage وفي Firebase =====
+        async function saveCompanyInfo() {
             const companyData = getCompanyData();
+            
+            // حفظ في localStorage
             localStorage.setItem('companyData', JSON.stringify(companyData));
             
-            // تحديث الاسم في الهيدر والسايدبار
+            // تحديث اسم الصيدلية في Firebase
+            const user = auth.currentUser;
+            if (user) {
+                const pharmacyRef = db.collection('pharmacies').doc(user.uid);
+                try {
+                    await pharmacyRef.update({
+                        name: companyData.pharmacyName
+                    });
+                    console.log("✅ تم تحديث اسم الصيدلية في Firebase");
+                } catch (error) {
+                    // إذا لم يكن المستند موجوداً، ننشئه
+                    await pharmacyRef.set({ name: companyData.pharmacyName });
+                    console.log("✅ تم إنشاء مستند الصيدلية في Firebase مع الاسم");
+                }
+            }
+            
+            // تحديث الاسم في الواجهة
             if (companyData.pharmacyName) {
                 document.getElementById('pharmacyNameHeader').innerHTML = companyData.pharmacyName;
             }
@@ -534,7 +523,6 @@
             generateQRCode();
         }
         
-        // ===== الإعدادات الأساسية =====
         function loadBasicSettings() {
             const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
             document.getElementById('currencySymbol').value = settings.currencySymbol || 'ج.س';
@@ -549,13 +537,12 @@
             localStorage.setItem('pharmacySettings', JSON.stringify(settings));
         }
         
-        function saveAllSettings() {
-            saveCompanyInfo();
+        async function saveAllSettings() {
+            await saveCompanyInfo();
             saveBasicSettings();
             alert('✅ تم حفظ جميع الإعدادات');
         }
         
-        // ===== دوال المستخدمين =====
         async function loadCurrentUser() {
             const user = auth.currentUser;
             if (!user) return;
@@ -582,7 +569,7 @@
         function displayUsers() {
             const tbody = document.getElementById('usersList');
             if (!pharmacyUsers.length) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا يوجد موظفين</td></tr>';
+                tbody.innerHTML = '<td><td colspan="6" style="text-align:center;">لا يوجد موظفين<\/td><\/tr>';
                 return;
             }
             let html = '';
@@ -658,14 +645,12 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
         function logout() { auth.signOut(); sessionStorage.clear(); window.location.href = 'index.html'; }
         
-        // ربط الأزرار
         document.getElementById('saveBtn').onclick = saveAllSettings;
         document.getElementById('saveLogoBtn').onclick = saveLogoToLocalStorage;
         document.getElementById('removeLogoBtn').onclick = removeLogo;
         document.getElementById('saveCompanyInfoBtn').onclick = saveCompanyInfo;
         document.getElementById('userName').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
         
-        // تحديث المعاينة عند تغيير أي حقل
         const inputs = ['pharmacyName', 'commercialRegister', 'taxNumber', 'phone', 'email', 'address', 'website'];
         inputs.forEach(id => {
             const el = document.getElementById(id);
