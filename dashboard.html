@@ -145,6 +145,13 @@
             background: #fee2e2;
             color: #dc2626;
         }
+        /* شعار أكبر */
+        .sidebar-header img {
+            max-width: 100px;
+            max-height: 100px;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
         @media (max-width: 768px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
@@ -175,12 +182,6 @@
             padding: 15px;
             border-bottom: 1px solid #e0e0e0;
         }
-        .sidebar-header img {
-            max-width: 80px;
-            max-height: 80px;
-            display: none;
-            margin-bottom: 8px;
-        }
     </style>
 </head>
 <body>
@@ -191,7 +192,7 @@
                 <button onclick="closeSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#2c7da0;">✕</button>
             </div>
             <div class="sidebar-header">
-                <img id="sidebarLogo" src="" alt="الشعار" style="max-width: 80px; max-height: 80px; display: none; margin-bottom: 8px;">
+                <img id="sidebarLogo" src="" alt="الشعار">
                 <i class="fas fa-hospital-user"></i>
                 <h3 id="pharmacyNameHeader">نظام الصيدلية</h3>
             </div>
@@ -271,7 +272,7 @@
                 <div class="table-container">
                     <table class="data-table">
                         <thead><th>رقم الفاتورة</th><th>العميل</th><th>المبلغ</th><th>التاريخ</th></thead>
-                        <tbody id="recent-invoices"><td><td colspan="4" class="text-center">جاري التحميل...<\/td><\/tr><\/tbody>
+                        <tbody id="recent-invoices"><tr><td colspan="4" class="text-center">جاري التحميل...<\/td><\/tr><\/tbody>
                     </table>
                 </div>
                 
@@ -286,7 +287,7 @@
                     <table class="data-table">
                         <thead><th>المنتج</th><th>الكمية</th><th>الحد الأدنى</th><th>الحالة</th></thead>
                         <tbody id="low-stock-products"><tr><td colspan="4" class="text-center">جاري التحميل...<\/td><\/tr><\/tbody>
-                    </table>
+                    </tr>
                 </div>
                 
                 <div class="section-header">
@@ -313,41 +314,25 @@
         let currentPharmacyId = null;
         
         function loadCompanyInfo() {
+            // تحميل الشعار من localStorage
             const savedLogo = localStorage.getItem('pharmacyLogo');
-            if (savedLogo) {
-                const sidebarLogo = document.getElementById('sidebarLogo');
-                if (sidebarLogo) {
+            const sidebarLogo = document.getElementById('sidebarLogo');
+            if (sidebarLogo) {
+                if (savedLogo) {
                     sidebarLogo.src = savedLogo;
                     sidebarLogo.style.display = 'block';
+                } else {
+                    sidebarLogo.style.display = 'none';
                 }
             }
-            // محاولة قراءة اسم الصيدلية من Firebase أولاً
-            const user = firebase.auth().currentUser;
-            if (user) {
-                firebase.firestore().collection('pharmacies').doc(user.uid).get().then(doc => {
-                    if (doc.exists && doc.data().name) {
-                        document.getElementById('pharmacyNameHeader').innerHTML = doc.data().name;
-                        // حفظ في localStorage للمزامنة
-                        const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
-                        settings.pharmacyName = doc.data().name;
-                        localStorage.setItem('pharmacySettings', JSON.stringify(settings));
-                    } else {
-                        const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
-                        if (settings.pharmacyName) {
-                            document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName;
-                        }
-                    }
-                }).catch(() => {
-                    const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
-                    if (settings.pharmacyName) {
-                        document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName;
-                    }
-                });
-            } else {
-                const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
-                if (settings.pharmacyName) {
-                    document.getElementById('pharmacyNameHeader').innerHTML = settings.pharmacyName;
-                }
+            
+            // تحميل اسم الصيدلية من localStorage (من الإعدادات)
+            const settings = JSON.parse(localStorage.getItem('pharmacySettings') || '{}');
+            const companyData = JSON.parse(localStorage.getItem('companyData') || '{}');
+            const pharmacyName = settings.pharmacyName || companyData.pharmacyName || 'نظام الصيدلية';
+            const nameHeader = document.getElementById('pharmacyNameHeader');
+            if (nameHeader) {
+                nameHeader.innerHTML = pharmacyName;
             }
         }
         
@@ -420,7 +405,7 @@
                         <td>${inv.number || '-'}</td>
                         <td>${inv.customerName || 'نقدي'}</td>
                         <td>${(inv.total || 0).toFixed(2)} ج.س</strong></td>
-                        <td>${formattedDate}</td>
+                        <tr>${formattedDate}</td>
                     </tr>
                 `;
             });
@@ -434,7 +419,7 @@
             const lowStock = allProducts.filter(p => p.quantity <= (p.minStock || 0));
             
             if (lowStock.length === 0) {
-                tbody.innerHTML = '</tr><td colspan="4" class="text-center">لا توجد منتجات منخفضة المخزون<\/td><\/tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">لا توجد منتجات منخفضة المخزون<\/td><\/tr>';
                 return;
             }
             
@@ -505,6 +490,8 @@
                 window.location.href = 'index.html';
             }
             document.getElementById('user-name').innerHTML = sessionStorage.getItem('userName') || 'مدير النظام';
+            
+            loadCompanyInfo(); // تحميل الاسم والشعار فوراً
             
             firebase.auth().onAuthStateChanged((user) => {
                 if (user) {
