@@ -6,6 +6,7 @@
     <title>المخزون - نظام الصيدليات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -34,6 +35,7 @@
         }
         .app-container { display: flex; height: 100vh; }
         
+        /* سايدبار احترافي */
         .sidebar {
             width: 280px;
             background: linear-gradient(180deg, #1a2a3a 0%, #0f1724 100%);
@@ -57,6 +59,7 @@
             object-fit: cover;
             margin-bottom: 15px;
             border: 3px solid #f39c12;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         
         .sidebar-header h3 {
@@ -64,6 +67,7 @@
             font-weight: 700;
             margin-top: 10px;
             color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
         
         .sidebar-nav a {
@@ -107,6 +111,7 @@
         
         .logout-btn:hover { background: #e74c3c; }
         
+        /* المحتوى الرئيسي */
         .main-content {
             flex: 1;
             display: flex;
@@ -339,10 +344,14 @@
                 <div class="table-wrapper">
                     <table class="data-table">
                         <thead>
-                            <tr><th>#</th><th>اسم المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>الحد الأدنى</th><th>الباركود</th><th>تاريخ الانتهاء</th><th>الإجراءات</th></tr>
+                            <tr>
+                                <th>#</th><th>اسم المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>الحد الأدنى</th><th>الباركود</th><th>تاريخ الانتهاء</th><th>الإجراءات</th>
+                            </tr>
                         </thead>
-                        <tbody id="productsList"><tr><td colspan="9" style="text-align:center;">جاري التحميل...<\/td><\/tr><\/tbody>
-                    <tr>
+                        <tbody id="productsList">
+                            <tr><td colspan="9" style="text-align:center;">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -407,26 +416,26 @@
         function displayProducts() {
             const tbody = document.getElementById('productsList');
             if (!products.length) {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات<\/td><\/tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات</td></tr>';
                 return;
             }
             let html = '';
             products.forEach((p, i) => {
                 const lowStockClass = p.quantity <= p.minStock ? 'text-danger' : '';
                 html += `<tr>
-                    <td>${i+1}<\/td>
-                    <td><strong>${p.name}</strong><\/td>
-                    <td>${p.purchasePrice} ج.س<\/td>
-                    <td style="color:#27ae60;">${p.sellingPrice} ج.س<\/td>
-                    <td class="${lowStockClass}">${p.quantity}<\/td>
-                    <td>${p.minStock}<\/td>
-                    <td>${p.barcode || '-'}<\/td>
-                    <td>${p.expiryDate || '-'}<\/td>
+                    <td>${i+1}</td>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.purchasePrice} ج.س</td>
+                    <td style="color:#27ae60;">${p.sellingPrice} ج.س</td>
+                    <td class="${lowStockClass}">${p.quantity}</td>
+                    <td>${p.minStock}</td>
+                    <td>${p.barcode || '-'}</td>
+                    <td>${p.expiryDate || '-'}</td>
                     <td>
-                        <button class="btn-edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i><\/button>
-                        <button class="btn-delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i><\/button>
-                    <\/td>
-                <\/tr>`;
+                        <button class="btn-edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
             });
             tbody.innerHTML = html;
         }
