@@ -57,7 +57,6 @@
             object-fit: cover;
             margin-bottom: 15px;
             border: 3px solid #f39c12;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         
         .sidebar-header h3 {
@@ -65,7 +64,6 @@
             font-weight: 700;
             margin-top: 10px;
             color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
         
         .sidebar-nav a {
@@ -344,7 +342,7 @@
                             <tr><th>#</th><th>اسم المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>الحد الأدنى</th><th>الباركود</th><th>تاريخ الانتهاء</th><th>الإجراءات</th></tr>
                         </thead>
                         <tbody id="productsList"><tr><td colspan="9" style="text-align:center;">جاري التحميل...<\/td><\/tr><\/tbody>
-                    </table>
+                    <tr>
                 </div>
             </div>
         </main>
@@ -372,12 +370,8 @@
         let currentPharmacyId = null;
         
         function loadCompanyInfo() {
-            // التحقق من وجود العنصر قبل التعديل
             const nameHeader = document.getElementById('pharmacyNameHeader');
-            if (!nameHeader) {
-                console.warn("pharmacyNameHeader not found yet");
-                return;
-            }
+            if (!nameHeader) return;
             
             const savedLogo = localStorage.getItem('pharmacyLogo');
             const sidebarLogo = document.getElementById('sidebarLogo');
@@ -407,12 +401,13 @@
             products = [];
             snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
             displayProducts();
+            setTimeout(loadCompanyInfo, 50);
         }
         
         function displayProducts() {
             const tbody = document.getElementById('productsList');
             if (!products.length) {
-                tbody.innerHTML = '<td><td colspan="9" style="text-align:center;">لا توجد منتجات<\/td><\/tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد منتجات<\/td><\/tr>';
                 return;
             }
             let html = '';
@@ -531,14 +526,11 @@
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 loadProducts();
-                // تأخير صغير للتأكد من وجود العنصر
-                setTimeout(() => loadCompanyInfo(), 200);
             } else {
                 window.location.href = 'index.html';
             }
         });
         
-        // محاولة إضافية بعد تحميل الصفحة
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(loadCompanyInfo, 100);
         });
